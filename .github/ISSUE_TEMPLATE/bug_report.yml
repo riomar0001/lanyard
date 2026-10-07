@@ -28,7 +28,7 @@ body:
     attributes:
       label: Lanyard version
       description: Settings → About, or `lanyard --version`.
-      placeholder: 1.1.0-beta.1
+      placeholder: 1.0.0-beta.1
     validations:
       required: true
   - type: dropdown

@@ -4,7 +4,7 @@ All notable changes to Lanyard are listed here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
-## [1.1.0-beta.1] - 2026-10-07
+## [1.0.0-beta.1] - 2026-10-07
 
 The first public build.
 
@@ -48,5 +48,5 @@ The first public build.
 - Passphrases are kept off the command line on Linux and macOS.
 - See [SECURITY.md](SECURITY.md) for the full audit.
 
-[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.1.0-beta.1...HEAD
-[1.1.0-beta.1]: https://github.com/riomar0001/lanyard/releases/tag/v1.1.0-beta.1
+[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/riomar0001/lanyard/releases/tag/v1.0.0-beta.1

@@ -141,6 +141,6 @@ Publishing is off until it is set up. Pick one way to authenticate:
 
 Then turn it on: **Settings → Secrets and variables → Actions → Variables**, add `NPM_PUBLISH` = `true`.
 
-Version history starts at `1.1.0-beta.1`. npm never lets a version number be reused, including unpublished test versions such as `1.0.0`, so always release a new number. While only prereleases exist, the job also points `latest` at the newest one so a plain install works.
+Version history starts at `1.0.0-beta.1`. npm never accepts the same version number twice, and an early test upload already holds `1.0.0` there, so publish the first stable release to npm as `1.0.1` or later, or unpublish `1.0.0` first. While only prereleases exist, the job also points `latest` at the newest one so a plain install works.
 
 Before releasing, move the **Unreleased** entries in [CHANGELOG.md](CHANGELOG.md) under the new version.

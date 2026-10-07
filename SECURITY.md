@@ -59,9 +59,9 @@ sha256sum --check --ignore-missing SHA256SUMS.txt
   and passes everything else, as JSON lines over stdio, to the Node sidecar,
   which only calls the API's own namespaces and methods.
 
-## Since the move to Tauri (1.1.0-beta.1)
+## Since the move to Tauri (1.0.0-beta.1)
 
-The app moved from Electron to Tauri in 1.1.0-beta.1. The audit below was done
+The app moved from Electron to Tauri in 1.0.0-beta.1. The audit below was done
 on the Electron app. Its findings about Lanyard's own logic (input
 validation, passphrases, key handling, ssh_config editing, terminals) live in
 `src/core` and still apply unchanged. The Electron-specific items (1, 8, 9,

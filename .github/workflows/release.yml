@@ -1,9 +1,9 @@
 # Release from a build branch.
 #
 # Creating (or pushing to) a branch named build-v<version>, for example
-# build-v1.1.0-beta.1, builds Lanyard <version> for Windows, macOS and Linux and
+# build-v1.0.0-beta.1, builds Lanyard <version> for Windows, macOS and Linux and
 # publishes it as the GitHub release v<version>. Versions with a suffix
-# (1.1.0-beta.1, 2.0.0-rc.1) are marked as prereleases.
+# (1.0.0-beta.1, 2.0.0-rc.1) are marked as prereleases.
 #
 # Pushing to the branch again rebuilds the same version: the tag moves to the
 # new commit and the release files are replaced.
