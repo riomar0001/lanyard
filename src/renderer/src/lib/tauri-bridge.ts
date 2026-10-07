@@ -18,8 +18,21 @@ import {
 
 function subscribe<T>(channel: string, listener: (payload: T) => void): () => void {
   let unlisten: (() => void) | undefined;
-  void listen<T>(channel, (e) => listener(e.payload)).then((u) => (unlisten = u));
-  return () => unlisten?.();
+  let cancelled = false;
+  listen<T>(channel, (e) => listener(e.payload)).then(
+    (u) => {
+      // Unsubscribed before Tauri confirmed: drop the listener right away.
+      if (cancelled) u();
+      else unlisten = u;
+    },
+    // Fails loudly instead of silently: without a capability allowing
+    // core:event:allow-listen (src-tauri/capabilities), no event arrives.
+    (err: unknown) => console.error(`Could not listen to ${channel}:`, err),
+  );
+  return () => {
+    cancelled = true;
+    unlisten?.();
+  };
 }
 
 export function installBridge(): void {
