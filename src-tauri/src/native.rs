@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 
 /// Validate a #rrggbb colour (parity with the old setTitleBarColors guard).
 fn is_hex_color(s: &str) -> bool {
@@ -54,7 +54,9 @@ pub async fn app_call(app: &AppHandle, method: &str, args: Value) -> Result<Valu
             if !url.starts_with("https://") {
                 return Err("Only https links can be opened.".into());
             }
-            app.shell().open(url, None).map_err(|e| e.to_string())?;
+            app.opener()
+                .open_url(url, None::<&str>)
+                .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
         "copy" => {
@@ -92,13 +94,10 @@ pub async fn app_call(app: &AppHandle, method: &str, args: Value) -> Result<Valu
             if !p.exists() {
                 return Err(format!("Not found: {target}"));
             }
-            let dir = if p.is_dir() {
-                p
-            } else {
-                p.parent().unwrap_or(p)
-            };
-            app.shell()
-                .open(dir.to_string_lossy(), None)
+            // Opens the containing folder with the item selected, like
+            // Explorer's / Finder's "Show in folder".
+            app.opener()
+                .reveal_item_in_dir(p)
                 .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
