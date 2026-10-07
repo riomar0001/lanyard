@@ -141,3 +141,23 @@ fn toggle_autostart(app: &AppHandle) -> Result<(), String> {
     }
     Ok(())
 }
+
+/// The Electron build registered "Start at login" under its app id, pointing
+/// at an exe in its own install folder that no longer exists, so Windows
+/// lists a dead, icon-less startup entry. Carry the user's choice over to
+/// this build's entry and remove the old one.
+#[cfg(windows)]
+pub fn migrate_legacy_autostart(app: &AppHandle) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let legacy = auto_launch::AutoLaunchBuilder::new()
+        .set_app_name("dev.riomar.lanyard")
+        .set_app_path(&exe.to_string_lossy())
+        .build()
+        .map_err(|e| e.to_string())?;
+    if legacy.is_enabled().map_err(|e| e.to_string())? {
+        app.autolaunch().enable().map_err(|e| e.to_string())?;
+    }
+    // A no-op when there is no old entry.
+    legacy.disable().map_err(|e| e.to_string())
+}
