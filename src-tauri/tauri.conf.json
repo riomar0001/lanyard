@@ -35,6 +35,12 @@
     "resources": {
       "../out/sidecar": "sidecar"
     },
-    "externalBin": ["binaries/node"]
+    "externalBin": ["binaries/node"],
+    "windows": {
+      "nsis": {
+        "installerIcon": "../resources/icon.ico",
+        "uninstallerIcon": "../resources/icon.ico"
+      }
+    }
   }
 }
