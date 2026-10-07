@@ -53,7 +53,7 @@ export interface NavigateRequest {
   intent?: string;
 }
 
-export type AppCommand = 'palette' | 'back' | 'forward';
+export type AppCommand = 'palette' | 'back' | 'forward' | 'zoom-in' | 'zoom-out' | 'zoom-reset';
 
 export type ChangeTopic = 'config' | 'knownHosts' | 'state' | 'keys';
 
