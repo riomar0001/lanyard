@@ -202,8 +202,16 @@ jobs:
         if: matrix.smoke
         shell: bash
         run: |
-          node_bin=$(ls "$RELEASE_DIR"/node "$RELEASE_DIR"/node.exe 2> /dev/null | head -1)
-          sidecar=$(ls "$RELEASE_DIR"/sidecar/index.js out/sidecar/index.js 2> /dev/null | head -1)
+          # Plain loops, not `ls a b | head`: one candidate never exists, and
+          # under bash -e -o pipefail that ls failure silently ends the step.
+          node_bin=""
+          for c in "$RELEASE_DIR/node" "$RELEASE_DIR/node.exe"; do
+            if [[ -f "$c" ]]; then node_bin=$c && break; fi
+          done
+          sidecar=""
+          for c in "$RELEASE_DIR/sidecar/index.js" out/sidecar/index.js; do
+            if [[ -f "$c" ]]; then sidecar=$c && break; fi
+          done
           [[ -n "$node_bin" ]] || { echo "::error::no bundled node in $RELEASE_DIR"; ls "$RELEASE_DIR"; exit 1; }
           echo "runtime: $node_bin ($("$node_bin" --version)), sidecar: $sidecar"
           "$node_bin" scripts/smoke-sidecar.mjs "$node_bin" "$sidecar"
