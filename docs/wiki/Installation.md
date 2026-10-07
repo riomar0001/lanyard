@@ -51,16 +51,16 @@ Some distributions need FUSE 2 for AppImages (`sudo apt install libfuse2` on Ubu
 If you only want the command line, install it from npm. This needs Node.js 20 or later.
 
 ```bash
-npm install -g lanyard-ssh
+npm install -g lanyard-cli
 ```
 
 Or run it without installing anything:
 
 ```bash
-npx lanyard-ssh status
+npx lanyard-cli status
 ```
 
-Each release also attaches the npm package as `lanyard-ssh-<version>.tgz`; install it with `npm install -g ./lanyard-ssh-<version>.tgz`.
+Each release also attaches the npm package as `lanyard-cli-<version>.tgz`; install it with `npm install -g ./lanyard-cli-<version>.tgz`.
 
 ## From source
 
@@ -75,6 +75,6 @@ Download the new release and install it over the old one. Your accounts, setting
 - **Windows:** Settings → Apps → Lanyard → Uninstall.
 - **macOS:** drag Lanyard from Applications to the Trash.
 - **Linux:** delete the AppImage.
-- **The CLI:** `npm uninstall -g lanyard-ssh`.
+- **The CLI:** `npm uninstall -g lanyard-cli`.
 
 Uninstalling leaves your SSH files exactly as they are, including the [managed section](How-It-Works.md) of `~/.ssh/config`. To remove Lanyard's data as well, delete the `~/.lanyard` folder.

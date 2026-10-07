@@ -565,8 +565,8 @@ function Cli() {
           </p>
           <div className="install-list">
             {[
-              ['Install globally', 'npm install -g lanyard-ssh'],
-              ['Or run without installing', 'npx lanyard-ssh status'],
+              ['Install globally', 'npm install -g lanyard-cli'],
+              ['Or run without installing', 'npx lanyard-cli status'],
             ].map(([label, cmd]) => (
               <div key={cmd}>
                 <p className="install-label">{label}</p>

@@ -68,4 +68,4 @@ The window loads only the bundled renderer, under the content security policy in
 - **esbuild** bundles the sidecar into `out/sidecar/index.js` and the CLI into `out/main/cli.js`.
 - **`scripts/fetch-node.mjs`** downloads the Node.js runtime for the build target into `src-tauri/binaries`, checked against Node's published checksums.
 - **Tauri** compiles the Rust shell and bundles it with the renderer, the sidecar (a resource) and Node (`externalBin`): NSIS on Windows, DMG on macOS, AppImage on Linux. The shell runs the sidecar with that bundled Node, so the app needs no Node install.
-- **The npm package `lanyard-ssh`** ships only `bin/` and `out/main/`, so the CLI runs on plain Node.js. The desktop app doesn't include the CLI.
+- **The npm package `lanyard-cli`** ships only `bin/` and `out/main/`, so the CLI runs on plain Node.js. The desktop app doesn't include the CLI.

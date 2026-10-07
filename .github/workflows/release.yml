@@ -255,14 +255,14 @@ jobs:
       - run: npm pack
       - name: Smoke-test the packed CLI
         run: |
-          npm install --prefix "$RUNNER_TEMP/try" "./lanyard-ssh-$VERSION.tgz"
+          npm install --prefix "$RUNNER_TEMP/try" "./lanyard-cli-$VERSION.tgz"
           reported=$(LANYARD_SSH_DIR="$RUNNER_TEMP/ssh" LANYARD_HOME="$RUNNER_TEMP/home" \
             "$RUNNER_TEMP/try/node_modules/.bin/lanyard" --version)
           [[ "$reported" == "$VERSION" ]] || { echo "::error::expected version $VERSION, got $reported"; exit 1; }
       - uses: actions/upload-artifact@v7
         with:
           name: lanyard-npm
-          path: lanyard-ssh-*.tgz
+          path: lanyard-cli-*.tgz
           if-no-files-found: error
           retention-days: 7
 
@@ -419,35 +419,35 @@ jobs:
         with:
           name: lanyard-npm
           path: npm
-      - name: Publish lanyard-ssh@${{ needs.version.outputs.version }}
+      - name: Publish lanyard-cli@${{ needs.version.outputs.version }}
         env:
           # Empty when npm trusted publishing is used instead of a token.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # npm never allows publishing the same version twice, so a rebuild
           # of an existing release leaves the registry alone.
-          if npm view "lanyard-ssh@$VERSION" version > /dev/null 2>&1; then
-            echo "lanyard-ssh@$VERSION is already on npm; nothing to publish." | tee -a "$GITHUB_STEP_SUMMARY"
+          if npm view "lanyard-cli@$VERSION" version > /dev/null 2>&1; then
+            echo "lanyard-cli@$VERSION is already on npm; nothing to publish." | tee -a "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           # Stable versions become `latest`. Prereleases get a tag named after
           # their label (1.2.0-beta.1 -> beta, 2.0.0-rc.1 -> rc), so a plain
-          # `npm install -g lanyard-ssh` keeps installing the stable release.
+          # `npm install -g lanyard-cli` keeps installing the stable release.
           tag=latest
           if [[ "$PRERELEASE" == true ]]; then
             tag="${VERSION#*-}"
             tag="${tag%%.*}"
             if [[ ! "$tag" =~ ^[A-Za-z][A-Za-z0-9-]*$ ]]; then tag=next; fi
           fi
-          npm publish "npm/lanyard-ssh-$VERSION.tgz" --access public --tag "$tag" --provenance
+          npm publish "npm/lanyard-cli-$VERSION.tgz" --access public --tag "$tag" --provenance
           # While only prereleases exist there is no `latest`, and a plain
-          # `npm install lanyard-ssh` would fail; point it at this version.
-          if [[ "$tag" != latest && -z "$(npm view lanyard-ssh dist-tags.latest 2> /dev/null)" ]]; then
-            npm dist-tag add "lanyard-ssh@$VERSION" latest ||
-              echo "::warning::No latest tag on npm; run: npm dist-tag add lanyard-ssh@$VERSION latest"
+          # `npm install lanyard-cli` would fail; point it at this version.
+          if [[ "$tag" != latest && -z "$(npm view lanyard-cli dist-tags.latest 2> /dev/null)" ]]; then
+            npm dist-tag add "lanyard-cli@$VERSION" latest ||
+              echo "::warning::No latest tag on npm; run: npm dist-tag add lanyard-cli@$VERSION latest"
           fi
           {
-            echo "Published [lanyard-ssh@$VERSION](https://www.npmjs.com/package/lanyard-ssh/v/$VERSION) to npm with the \`$tag\` tag."
+            echo "Published [lanyard-cli@$VERSION](https://www.npmjs.com/package/lanyard-cli/v/$VERSION) to npm with the \`$tag\` tag."
             echo
-            echo "    npm install -g lanyard-ssh@$tag"
+            echo "    npm install -g lanyard-cli@$tag"
           } >> "$GITHUB_STEP_SUMMARY"

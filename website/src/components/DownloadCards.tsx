@@ -65,8 +65,8 @@ export function DownloadCards() {
           </div>
           <p>Any platform with Node.js 20+</p>
           <div className="npm-box">
-            <code>npm i -g lanyard-ssh</code>
-            <CopyButton text="npm install -g lanyard-ssh" label="Copy" icon={false} aria="Copy npm install command" />
+            <code>npm i -g lanyard-cli</code>
+            <CopyButton text="npm install -g lanyard-cli" label="Copy" icon={false} aria="Copy npm install command" />
           </div>
         </article>
       </div>
