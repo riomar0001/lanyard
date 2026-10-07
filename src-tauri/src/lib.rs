@@ -13,6 +13,7 @@ use std::sync::Arc;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Listener, Manager, WindowEvent};
+use tauri_plugin_opener::OpenerExt;
 
 #[tauri::command]
 async fn api_invoke(
@@ -149,25 +150,62 @@ fn build_app_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         edit.append(&item)?;
     }
 
+    // Items the window or the renderer handles. Their shortcuts are handled
+    // there too (the menu only shows them), so they work without the menu.
+    let item = |id: &str, label: &str, accel: Option<&str>| {
+        MenuItem::with_id(app, id, label, true, accel).expect("menu item")
+    };
+
     let view = Submenu::new(app, "View", true)?;
-    view.append(&MenuItem::with_id(
-        app,
+    view.append(&item(
         "cmd:palette",
         "Command Palette…",
-        true,
         Some("CmdOrCtrl+K"),
-    )?)?;
+    ))?;
     view.append(&PredefinedMenuItem::separator(app)?)?;
-    view.append(&PredefinedMenuItem::fullscreen(app, None)?)?;
-    if cfg!(debug_assertions) {
-        view.append(&PredefinedMenuItem::separator(app)?)?;
-    }
+    view.append(&item("cmd:zoom-reset", "Actual Size", Some("CmdOrCtrl+0")))?;
+    view.append(&item("cmd:zoom-in", "Zoom In", Some("CmdOrCtrl+=")))?;
+    view.append(&item("cmd:zoom-out", "Zoom Out", Some("CmdOrCtrl+-")))?;
+    view.append(&PredefinedMenuItem::separator(app)?)?;
+    // A plain item rather than PredefinedMenuItem::fullscreen, which muda
+    // leaves out of the menu on Windows and GTK.
+    view.append(&item("win:fullscreen", "Toggle Full Screen", None))?;
+
+    let history = Submenu::new(app, "History", true)?;
+    history.append(&item("cmd:back", "Back", Some("Alt+Left")))?;
+    history.append(&item("cmd:forward", "Forward", Some("Alt+Right")))?;
+
+    let help = Submenu::new(app, "Help", true)?;
+    help.append(&nav("About Lanyard", "settings:about", None))?;
+    help.append(&nav("Command Line Tool", "settings", None))?;
+    help.append(&PredefinedMenuItem::separator(app)?)?;
+    help.append(&item("open:ssh", "Open SSH Folder", None))?;
+    help.append(&item("open:data", "Open Lanyard Data Folder", None))?;
+    help.append(&nav("Backups", "backups", None))?;
+    help.append(&PredefinedMenuItem::separator(app)?)?;
+    help.append(&item("url:docs", "User Guide", None))?;
+    help.append(&item("url:issues", "Report a Problem", None))?;
 
     let menu = Menu::new(app)?;
-    for sub in [file, edit, view, pages] {
+    for sub in [file, edit, view, pages, history, help] {
         menu.append(&sub)?;
     }
     Ok(menu)
+}
+
+/// Opens one of Lanyard's folders. The paths come from the sidecar, which
+/// knows about LANYARD_SSH_DIR / LANYARD_HOME; the round trip blocks, so it
+/// runs off the main thread.
+fn open_folder(app: &AppHandle, which: &str) {
+    let key = if which == "ssh" { "sshDir" } else { "dataDir" };
+    let app = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let sidecar = app.state::<Arc<sidecar::Sidecar>>().inner().clone();
+        let reply = sidecar.call("app", "info", serde_json::json!([]));
+        if let Some(dir) = reply["data"]["paths"][key].as_str() {
+            let _ = app.opener().open_path(dir, None::<&str>);
+        }
+    });
 }
 
 fn on_app_menu_event(app: &AppHandle, id: &str) {
@@ -179,9 +217,30 @@ fn on_app_menu_event(app: &AppHandle, id: &str) {
     } else if let Some(cmd) = id.strip_prefix("cmd:") {
         tray::show_window(app, None);
         let _ = app.emit("lanyard:command", cmd);
+    } else if id == "win:fullscreen" {
+        if let Some(w) = app.get_webview_window("main") {
+            let full = w.is_fullscreen().unwrap_or(false);
+            let _ = w.set_fullscreen(!full);
+        }
+    } else if let Some(which) = id.strip_prefix("open:") {
+        open_folder(app, which);
+    } else if let Some(page) = id.strip_prefix("url:") {
+        let url = match page {
+            "docs" => "https://lanyard.riomar.dev/docs/",
+            _ => "https://github.com/riomar0001/lanyard/issues/new/choose",
+        };
+        let _ = app.opener().open_url(url, None::<&str>);
     } else if id == "app:quit" {
         app.exit(0);
     }
+}
+
+/// Menu ids handled by the app menu; everything else belongs to the tray.
+fn is_app_menu_id(id: &str) -> bool {
+    ["nav:", "cmd:", "win:", "open:", "url:"]
+        .iter()
+        .any(|prefix| id.starts_with(prefix))
+        || id == "app:quit"
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -212,7 +271,7 @@ pub fn run() {
             app.set_menu(menu)?;
             app.handle().on_menu_event(|app, event| {
                 let id = event.id().0.clone();
-                if id.starts_with("nav:") || id.starts_with("cmd:") || id == "app:quit" {
+                if is_app_menu_id(&id) {
                     on_app_menu_event(app, &id);
                 } else {
                     tray::on_menu_event(app, &id);
