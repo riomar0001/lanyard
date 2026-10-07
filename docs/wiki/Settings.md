@@ -24,6 +24,6 @@ Settings are stored in `~/.lanyard/state.json` and shared with the `lanyard` CLI
 
 ![Settings: command line and files](../images/settings-about.png)
 
-- **Command line:** whether the `lanyard` and `lny` commands are on your PATH, with examples. On macOS and Linux this shows the one-time install command.
+- **Command line:** how to install the `lanyard` and `lny` commands (`npm install -g lanyard-ssh`), with examples.
 - **Files:** every path Lanyard uses, each with a button to open it.
 - **About:** version and licence, plus the Tauri, WebView, Node.js, OpenSSH and Git versions Lanyard found.

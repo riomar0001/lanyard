@@ -78,7 +78,7 @@ Download the file for your system from the [latest release](https://github.com/r
 | Linux                 | `Lanyard-<version>-x86_64.AppImage` | `chmod +x` the file, then run it.                                       |
 | CLI only              | `npm install -g lanyard-ssh`        | Needs Node.js 20+. Or run once with `npx lanyard-ssh status`.           |
 
-Lanyard uses the OpenSSH tools already on your machine (`ssh`, `ssh-keygen`, `ssh-add`). Windows 10 and 11 include them. The Windows installer also puts the `lanyard` and `lny` commands on your PATH.
+Lanyard uses the OpenSSH tools already on your machine (`ssh`, `ssh-keygen`, `ssh-add`). Windows 10 and 11 include them. The app bundles everything else it needs; there is nothing more to install. The `lanyard` command comes separately from npm (`npm install -g lanyard-ssh`).
 
 Full instructions: [Installation](https://github.com/riomar0001/lanyard/wiki/Installation).
 
@@ -102,7 +102,7 @@ Step-by-step with screenshots: [Getting started](https://github.com/riomar0001/l
 
 ## Command line
 
-Everything in the app is also a command. `lanyard` (or the short alias `lny`) with no arguments opens the app.
+Everything in the app is also a command. Install it with `npm install -g lanyard-ssh` (Node.js 20+). `lanyard` (or the short alias `lny`) with no arguments opens the desktop app if it is installed.
 
 ```bash
 lanyard status                                   # who you are on each git host

@@ -7,6 +7,7 @@ import { renderShims, SHIM_MARKER, type ShimTarget } from '../src/core/cli/shims
 
 const root = path.resolve(__dirname, '..');
 const built = fs.existsSync(path.join(root, 'out', 'main', 'cli.js'));
+const { version } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')) as { version: string };
 
 /** Write the shims to a folder with a space in its name and run `lanyard --version` through cmd.exe. */
 function runShim(target: ShimTarget): string {
@@ -25,7 +26,7 @@ describe.skipIf(process.platform !== 'win32' || !built)('Windows shims actually 
   const script = path.join(root, 'bin', 'lanyard.js');
 
   it('with node', () => {
-    expect(runShim({ exe: 'node', script })).toBe('1.0.0');
+    expect(runShim({ exe: 'node', script })).toBe(version);
   });
 });
 

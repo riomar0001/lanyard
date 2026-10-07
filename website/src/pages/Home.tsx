@@ -653,8 +653,11 @@ function ManagedSection() {
                 <Icon name="chip" size={16} />
               </span>
               <div>
-                <strong>Sandboxed app</strong>
-                <p>The desktop app runs sandboxed, and its source is on GitHub for anyone to review.</p>
+                <strong>Locked-down window</strong>
+                <p>
+                  The app's window has no access to your files and can only call Lanyard's own API. The source is on GitHub for anyone to
+                  review.
+                </p>
               </div>
             </li>
             <li>

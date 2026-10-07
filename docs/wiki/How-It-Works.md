@@ -45,18 +45,16 @@ The section is rebuilt from your saved accounts on every change. Edit accounts i
 
 ## Files Lanyard touches
 
-| File or folder                                   | What Lanyard does with it                                                                             |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `~/.ssh/config`                                  | Reads all of it; writes the managed section and the host blocks you edit. Backed up first.            |
-| `~/.ssh/<key>` and `<key>.pub`                   | Creates keys you generate; moves keys you delete to the trash.                                        |
-| `~/.ssh/known_hosts`                             | Adds keys you trust, removes entries you forget. Backed up first.                                     |
-| `~/.gitconfig`                                   | Sets `user.name` / `user.email` on switch, only for accounts with **Set the global git identity** on. |
-| `<repo>/.git/config`                             | Only when you point a repository at an account: the remote URL and the repo's identity.               |
-| `~/.lanyard/state.json`                          | Your accounts, custom providers and settings. No keys or passphrases.                                 |
-| `~/.lanyard/backups/`                            | Snapshots of `config` and `known_hosts`.                                                              |
-| `~/.lanyard/trash/`                              | Keys you deleted.                                                                                     |
-| Windows: `%LOCALAPPDATA%\Lanyard\bin`, user PATH | The `lanyard` / `lny` launchers, added by the installer and removed by the uninstaller.               |
-| macOS / Linux: `~/.local/bin`                    | The `lanyard` / `lny` launchers, when you run the install command from Settings.                      |
+| File or folder                 | What Lanyard does with it                                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `~/.ssh/config`                | Reads all of it; writes the managed section and the host blocks you edit. Backed up first.            |
+| `~/.ssh/<key>` and `<key>.pub` | Creates keys you generate; moves keys you delete to the trash.                                        |
+| `~/.ssh/known_hosts`           | Adds keys you trust, removes entries you forget. Backed up first.                                     |
+| `~/.gitconfig`                 | Sets `user.name` / `user.email` on switch, only for accounts with **Set the global git identity** on. |
+| `<repo>/.git/config`           | Only when you point a repository at an account: the remote URL and the repo's identity.               |
+| `~/.lanyard/state.json`        | Your accounts, custom providers and settings. No keys or passphrases.                                 |
+| `~/.lanyard/backups/`          | Snapshots of `config` and `known_hosts`.                                                              |
+| `~/.lanyard/trash/`            | Keys you deleted.                                                                                     |
 
 Lanyard writes your existing files in place, so their permissions (and Windows ACLs, which OpenSSH checks) stay as they were. New files are created readable only by you.
 

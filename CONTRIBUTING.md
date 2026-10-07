@@ -7,37 +7,46 @@ Thanks for helping. This page covers building from source, the checks a change h
 
 ## Set up
 
-You need Node.js 24 (CI uses 24; the published CLI runs on 20+), git, and the OpenSSH client tools (`ssh -V` should work).
+You need:
+
+- **Node.js 24** (CI uses 24; the published CLI runs on 20+) and git.
+- **Rust** (stable, via [rustup](https://rustup.rs)) and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS: the Microsoft C++ Build Tools and WebView2 on Windows, Xcode Command Line Tools on macOS, and `libwebkit2gtk-4.1-dev` and friends on Linux.
+- The OpenSSH client tools (`ssh -V` should work).
 
 ```bash
 git clone https://github.com/riomar0001/lanyard.git
 cd lanyard
 npm ci
-npm run dev
+npm run tauri:dev
 ```
 
-`npm run dev` starts the app with hot reload. To keep experiments away from your real `~/.ssh`, point the app and the CLI at a sandbox:
+`npm run tauri:dev` downloads the Node runtime the app bundles (once), builds the sidecar and starts the app with a hot-reloading renderer. To keep experiments away from your real `~/.ssh`, point the app and the CLI at a sandbox:
 
 ```bash
-LANYARD_SSH_DIR=/tmp/lny/.ssh LANYARD_HOME=/tmp/lny/.lanyard npm run dev
+LANYARD_SSH_DIR=/tmp/lny/.ssh LANYARD_HOME=/tmp/lny/.lanyard npm run tauri:dev
 ```
 
-On Windows PowerShell: `$env:LANYARD_SSH_DIR = "$env:TEMP\lny\.ssh"` (and `LANYARD_HOME` the same way), then `npm run dev`.
+On Windows PowerShell: `$env:LANYARD_SSH_DIR = "$env:TEMP\lny\.ssh"` (and `LANYARD_HOME` the same way), then `npm run tauri:dev`.
+
+The TypeScript side (core, CLI, tests) needs no Rust: `npm ci`, `npm run build` and `npm test` work on their own.
 
 ## Scripts
 
-| Script                 | What it does                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| `npm run dev`          | App with hot reload.                                                                  |
-| `npm run build`        | Compile main, preload, renderer and the CLI into `out/`.                              |
-| `npm run lanyard -- …` | Run the CLI from `out/` (build first), e.g. `npm run lanyard -- status`.              |
-| `npm test`             | Vitest. Tests run against a throwaway `~/.ssh` and use the real `ssh` / `ssh-keygen`. |
-| `npm run typecheck`    | TypeScript (tsgo) for the Node and the web projects.                                  |
-| `npm run lint`         | ESLint with type-aware rules. `npm run lint:fix` applies the safe fixes.              |
-| `npm run format`       | Prettier. `npm run format:check` only reports.                                        |
-| `npm run check`        | Everything CI checks: format, lint, typecheck, tests.                                 |
-| `npm run dist`         | Build an installer into `release/` for the current OS.                                |
-| `npm run icons`        | Regenerate the app and tray icons in `resources/`.                                    |
+| Script                 | What it does                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run tauri:dev`    | The app with a hot-reloading renderer.                                                     |
+| `npm run tauri:build`  | Build the app and its installer for the current OS into `src-tauri/target/release/bundle`. |
+| `npm run build`        | Build the renderer, the sidecar and the CLI into `out/`.                                   |
+| `npm run fetch:node`   | Download the Node runtime the app bundles into `src-tauri/binaries` (checksum-verified).   |
+| `npm run lanyard -- …` | Run the CLI from `out/` (build first), e.g. `npm run lanyard -- status`.                   |
+| `npm test`             | Vitest. Tests run against a throwaway `~/.ssh` and use the real `ssh` / `ssh-keygen`.      |
+| `npm run typecheck`    | TypeScript (tsgo) for the Node and the web projects.                                       |
+| `npm run lint`         | ESLint with type-aware rules. `npm run lint:fix` applies the safe fixes.                   |
+| `npm run format`       | Prettier. `npm run format:check` only reports.                                             |
+| `npm run check`        | Everything CI checks on the TypeScript side: format, lint, typecheck, tests.               |
+| `npm run icons`        | Regenerate the app and tray icons in `resources/`.                                         |
+
+For the Rust shell, CI also runs `cargo fmt --check`, `cargo clippy` and `cargo test` in `src-tauri`.
 
 ## Making a change
 
@@ -90,7 +99,7 @@ git push origin main:build-v1.2.0
 1. reads the version from the branch name (it must be valid semver);
 2. runs CI;
 3. sets that version in the app;
-4. builds the Windows installer, the macOS dmgs (Apple Silicon and Intel), the Linux AppImage and the npm tarball, and checks that each one's CLI reports the version;
+4. builds the Tauri app for each platform with its bundled Node runtime: the Windows installer (NSIS), the macOS DMGs (Apple Silicon and Intel) and the Linux AppImage, checks that the bundled runtime starts the sidecar, and builds and checks the npm tarball;
 5. publishes the GitHub release `v1.2.0` with the files, `SHA256SUMS.txt` and generated notes;
 6. publishes `lanyard-ssh@1.2.0` to npm (once set up, see below) and rebuilds the website.
 
@@ -111,7 +120,7 @@ The policy users see is in [SECURITY.md](SECURITY.md#code-signing-policy). Three
 5. Create a CI user with an API token. On GitHub, save it as the secret `SIGNPATH_API_TOKEN`, and save your SignPath organization ID as the repository variable `SIGNPATH_ORGANIZATION_ID`. If your slugs differ, set the variables `SIGNPATH_PROJECT_SLUG` and `SIGNPATH_SIGNING_POLICY_SLUG`.
 6. Remove the "not yet approved" status line from the policy in SECURITY.md.
 
-The next release then builds the Windows app, has SignPath sign `Lanyard.exe`, builds the installer from the signed app, has SignPath sign the installer, and checks both signatures. Each signing request waits for your approval in SignPath, for up to an hour. Signing only removes the SmartScreen warning once the certificate has built up reputation.
+The next release then builds the Windows app, has SignPath sign `lanyard.exe`, builds the installer from the signed app, has SignPath sign the installer, and checks both signatures. Each signing request waits for your approval in SignPath, for up to an hour. Signing only removes the SmartScreen warning once the certificate has built up reputation.
 
 **GPG signature over the checksums (free).**
 

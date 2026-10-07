@@ -18,7 +18,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 
 > **Status:** not yet approved by SignPath Foundation. Until then, Windows releases are not code-signed.
 
-- **What is signed:** the Windows app (`Lanyard.exe`) and its installer, only from release builds made by [`release.yml`](.github/workflows/release.yml) on GitHub-hosted runners from this repository's source. Bundled upstream binaries (Electron's own libraries) are not signed with this certificate.
+- **What is signed:** the Windows app (`lanyard.exe`) and its installer, only from release builds made by [`release.yml`](.github/workflows/release.yml) on GitHub-hosted runners from this repository's source. The bundled Node.js runtime (`node.exe`) is an upstream binary, signed by its own publisher, and is not signed with this certificate.
 - **Committers and reviewers:** [riomar0001](https://github.com/riomar0001). Changes from anyone else arrive as pull requests and are reviewed before merging.
 - **Approvers:** [riomar0001](https://github.com/riomar0001) approves every signing request in SignPath.
 - **macOS** builds are not notarized yet, so macOS asks for confirmation on first launch.
@@ -51,12 +51,35 @@ sha256sum --check --ignore-missing SHA256SUMS.txt
   content, other local users, values that end up as arguments to `ssh`,
   `ssh-keygen`, `git`, `reg` or a terminal), and the environment of a packaged
   build.
-- **Boundary:** the renderer is sandboxed (`contextIsolation`, `sandbox`, no
-  Node integration) and reaches the main process through one IPC channel. The
-  main process only answers the top frame of the bundled page, so the API is
-  never available to anything else the window might load.
+- **Boundary:** the window loads only the bundled renderer, under the content
+  security policy in `src-tauri/tauri.conf.json`, and has no Node or
+  filesystem access of its own. Besides setting its zoom level, it can only
+  call one Tauri command, `api_invoke`. The Rust shell answers desktop
+  requests itself (dialogs, clipboard, opening https links, window controls)
+  and passes everything else, as JSON lines over stdio, to the Node sidecar,
+  which only calls the API's own namespaces and methods.
 
-## Audit: 2026-10-07
+## Since the move to Tauri (1.1.0-beta.1)
+
+The app moved from Electron to Tauri in 1.1.0-beta.1. The audit below was done
+on the Electron app. Its findings about Lanyard's own logic (input
+validation, passphrases, key handling, ssh_config editing, terminals) live in
+`src/core` and still apply unchanged. The Electron-specific items (1, 8, 9,
+10 and the CLI installer) no longer exist in that form:
+
+- The renderer is no longer loaded from a URL an environment variable can
+  change: Tauri serves the bundled files, and `devUrl` is used only by
+  `tauri dev`.
+- The content security policy is set in `tauri.conf.json` (`csp` for
+  release builds, `devCsp` for development).
+- The sidecar runs with the Node.js runtime bundled with the app, so a
+  packaged app never executes a different `node` from the user's PATH.
+- The desktop app no longer installs the CLI or edits the user's PATH; the CLI
+  comes from npm.
+- `npm audit` reports no vulnerabilities in any dependency, build tools
+  included.
+
+## Audit: 2026-10-07 (Electron app)
 
 Scope: Electron configuration and IPC, every place user input reaches a child
 process, the filesystem or ssh_config, secrets handling, the Windows CLI
@@ -89,6 +112,6 @@ covered by `test/security.test.ts` or were verified against a packaged build.
 
 ### Accepted risks
 
-- **`RunAsNode` fuse stays enabled.** The installed `lanyard` command runs `Lanyard.exe` with `ELECTRON_RUN_AS_NODE`, so the binary can act as a Node runtime. This does not cross a privilege boundary (it runs as the invoking user), but it is a known "living off the land" binary pattern.
+- **A bundled Node.js runtime.** The app ships `node` next to its binary to run the sidecar. Like any Node install it can run arbitrary scripts, but only as the invoking user, so it crosses no privilege boundary.
 - **Trusted-user features.** The raw config editor, custom host options and git's `core.sshCommand` setting can all run commands by design (for example via `ProxyCommand`). They are the user's own configuration, and the protections above keep anyone else from driving them.
-- **Build-time dependency advisory.** `npm audit` reports `sprintf-js` (GHSA-hp3w-g68c-fv3c, moderate, a denial of service through format strings). It is pulled in only by electron-builder's Electron download tooling, takes no attacker input, and has no patched release. Runtime dependencies: `npm audit --omit=dev` reports 0 vulnerabilities, and CI fails if that changes.
+- **Dependencies.** `npm audit` reports 0 vulnerabilities. CI fails if a runtime dependency gains one.

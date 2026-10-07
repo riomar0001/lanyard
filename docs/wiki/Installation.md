@@ -18,7 +18,7 @@ Download from the [latest release](https://github.com/riomar0001/lanyard/release
 2. Run it. If SmartScreen says "Windows protected your PC", click **More info → Run anyway**. The builds are not code-signed yet.
 3. Choose where to install, then finish the installer.
 
-The installer also adds the `lanyard` and `lny` commands to your PATH. Open a **new** terminal to use them.
+For the `lanyard` command, see [CLI only](#cli-only): the app doesn't install it.
 
 ### macOS (Apple Silicon or Intel)
 
@@ -32,7 +32,7 @@ If macOS says the app "is damaged", remove the download quarantine flag and open
 xattr -dr com.apple.quarantine /Applications/Lanyard.app
 ```
 
-To get the `lanyard` command, open **Settings → Command line** in the app and run the install command shown there once. It installs into `~/.local/bin`.
+For the `lanyard` command, see [CLI only](#cli-only): the app doesn't install it.
 
 ### Linux
 
@@ -44,7 +44,7 @@ chmod +x Lanyard-*.AppImage
 ./Lanyard-*.AppImage
 ```
 
-Some distributions need FUSE 2 for AppImages (`sudo apt install libfuse2` on Ubuntu 22.04 and later). For the `lanyard` command, run the install command shown in **Settings → Command line** once.
+Some distributions need FUSE 2 for AppImages (`sudo apt install libfuse2` on Ubuntu 22.04 and later). For the `lanyard` command, see [CLI only](#cli-only).
 
 ## CLI only
 
@@ -72,8 +72,9 @@ Download the new release and install it over the old one. Your accounts, setting
 
 ## Uninstalling
 
-- **Windows:** Settings → Apps → Lanyard → Uninstall. The uninstaller also removes the `lanyard` commands from your PATH.
+- **Windows:** Settings → Apps → Lanyard → Uninstall.
 - **macOS:** drag Lanyard from Applications to the Trash.
 - **Linux:** delete the AppImage.
+- **The CLI:** `npm uninstall -g lanyard-ssh`.
 
 Uninstalling leaves your SSH files exactly as they are, including the [managed section](How-It-Works.md) of `~/.ssh/config`. To remove Lanyard's data as well, delete the `~/.lanyard` folder.

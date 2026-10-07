@@ -16,21 +16,32 @@ const EXAMPLES = [
 ];
 
 const NPX = 'npx lanyard-ssh status';
+const NPM_INSTALL = 'npm install -g lanyard-ssh';
 
 /**
- * Settings > Command line: a reference, not an installer. The Windows
- * installer adds `lanyard` / `lny` to the PATH; elsewhere this explains the
- * one command to run.
+ * Settings > Command line: a reference, not an installer. The desktop app
+ * doesn't manage the commands; they come from npm (or `npm link` in a source
+ * checkout).
  */
 export function CommandLineSection() {
   const { data: s } = useResource(() => api.app.cliStatus());
   const { run } = useTask();
   const copy = (text: string) => run('copy', () => api.app.copy(text), 'Copied');
   const ready = !!s?.installed && s.onPath;
+  // Whether the app tracks the commands at all; when it doesn't, there is no
+  // PATH state to report, only how to install them.
+  const managed = !!s && (s.installed || !!s.installCommand || !!s.binDir);
 
   let hint: ReactNode = null;
   if (s && !ready) {
-    if (!s.packaged) {
+    if (s.packaged && !managed) {
+      hint = (
+        <span className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+          Install them with npm (Node.js 20+): <code className="selectable">{NPM_INSTALL}</code>
+          <Button size="sm" variant="ghost" iconOnly title="Copy" icon={<Copy size={14} />} onClick={() => void copy(NPM_INSTALL)} />
+        </span>
+      );
+    } else if (!s.packaged) {
       hint = (
         <>
           Development build: run <code>npm link</code> in the project folder to get the commands.
@@ -63,7 +74,7 @@ export function CommandLineSection() {
             {ready ? 'Added to your PATH when Lanyard was installed - open a new terminal and run lanyard.' : hint}
           </div>
         </div>
-        {s && <Badge tone={ready ? 'success' : 'warning'}>{ready ? 'On your PATH' : 'Not on PATH'}</Badge>}
+        {s && managed && <Badge tone={ready ? 'success' : 'warning'}>{ready ? 'On your PATH' : 'Not on PATH'}</Badge>}
       </div>
 
       <div className="card-body stack">

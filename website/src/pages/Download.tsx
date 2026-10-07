@@ -10,7 +10,7 @@ const STEPS = [
     steps: [
       'Run Lanyard-Setup-<version>-x64.exe.',
       'If SmartScreen appears, choose More info → Run anyway.',
-      'Open a new terminal to use the lanyard and lny commands.',
+      'For the lanyard command, install the CLI with npm: npm install -g lanyard-ssh',
     ],
   },
   {
@@ -18,7 +18,7 @@ const STEPS = [
     steps: [
       'Open the .dmg and drag Lanyard to Applications.',
       'The first time, right-click Lanyard in Applications and choose Open.',
-      'For the CLI, run the install command shown in Settings → Command line.',
+      'For the lanyard command, install the CLI with npm: npm install -g lanyard-ssh',
     ],
   },
   {
@@ -26,7 +26,7 @@ const STEPS = [
     steps: [
       'Make the AppImage executable: chmod +x Lanyard-*.AppImage',
       'Run it. Some distributions need FUSE 2 (libfuse2).',
-      'For the CLI, run the install command shown in Settings → Command line.',
+      'For the lanyard command, install the CLI with npm: npm install -g lanyard-ssh',
     ],
   },
 ];

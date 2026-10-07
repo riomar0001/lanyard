@@ -39,11 +39,12 @@ The first public build.
 - Lives in the system tray, with account switching, per-server key switching, connect and test in the tray menu.
 - Command palette (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd>), keyboard shortcuts, back and forward history, and a Slack-style title bar.
 - Light and dark themes and eight accent colours.
-- `lanyard` / `lny` CLI covering everything in the app, with `--json` output. The Windows installer adds it to the PATH; it is also on npm as `lanyard-ssh`.
+- `lanyard` / `lny` CLI covering everything in the app, with `--json` output, on npm as `lanyard-ssh`.
+- Built with Tauri: a small native shell with the SSH logic in a bundled Node.js sidecar, so the app needs no Node install.
 
 ### Security
 
-- Sandboxed renderer with a strict content security policy, IPC limited to the app's own page, and hardened Electron fuses.
+- The window has no Node or filesystem access, runs under a strict content security policy, and can only call Lanyard's own API.
 - Passphrases are kept off the command line on Linux and macOS.
 - See [SECURITY.md](SECURITY.md) for the full audit.
 

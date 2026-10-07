@@ -85,9 +85,9 @@ xattr -dr com.apple.quarantine /Applications/Lanyard.app
 
 ### `lanyard: command not found`
 
-- **Windows:** open a **new** terminal after installing; terminals opened earlier keep the old PATH.
-- **macOS / Linux:** run the install command shown in **Settings → Command line** once, and make sure `~/.local/bin` is on your PATH.
-- **Anywhere with Node.js 20+:** `npx lanyard-ssh status`.
+- The desktop app doesn't install the command. Install it with npm (Node.js 20+): `npm install -g lanyard-ssh`.
+- After installing, open a **new** terminal; terminals opened earlier keep the old PATH.
+- Without installing anything: `npx lanyard-ssh status`.
 
 ### Lanyard keeps running after I close it
 
