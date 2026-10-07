@@ -439,7 +439,7 @@ jobs:
             tag="${tag%%.*}"
             if [[ ! "$tag" =~ ^[A-Za-z][A-Za-z0-9-]*$ ]]; then tag=next; fi
           fi
-          npm publish "npm/lanyard-cli-$VERSION.tgz" --access public --tag "$tag" --provenance
+          npm publish "./npm/lanyard-cli-$VERSION.tgz" --access public --tag "$tag" --provenance
           # While only prereleases exist there is no `latest`, and a plain
           # `npm install lanyard-cli` would fail; point it at this version.
           if [[ "$tag" != latest && -z "$(npm view lanyard-cli dist-tags.latest 2> /dev/null)" ]]; then
