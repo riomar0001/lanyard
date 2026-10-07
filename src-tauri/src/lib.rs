@@ -8,8 +8,8 @@ mod sidecar;
 mod tray;
 
 use serde_json::Value;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Listener, Manager, WindowEvent};
@@ -61,19 +61,33 @@ struct TrayRefreshPending(Arc<AtomicBool>);
 /// event per resize tick.
 struct LastMaximized(AtomicBool);
 
+/// The Node runtime for the sidecar: the one bundled next to the app binary
+/// (tauri.conf.json `externalBin`, fetched by scripts/fetch-node.mjs), so the
+/// app works without a Node install and when launched from Finder or the Start
+/// menu, which don't see a shell's PATH. Falls back to `node` on the PATH.
+fn node_program() -> String {
+    let name = if cfg!(windows) { "node.exe" } else { "node" };
+    std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.parent().map(|dir| dir.join(name)))
+        .filter(|path| path.is_file())
+        .map(|path| path.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "node".into())
+}
+
 fn sidecar_script(app: &AppHandle) -> (String, String) {
     // Packaged: resources/sidecar/index.js next to the binary; dev: out/sidecar.
     if let Ok(dir) = app.path().resource_dir() {
         let candidate = dir.join("sidecar").join("index.js");
         if candidate.exists() {
-            return ("node".into(), candidate.to_string_lossy().into_owned());
+            return (node_program(), candidate.to_string_lossy().into_owned());
         }
     }
     let dev = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../out/sidecar/index.js")
         .canonicalize()
         .expect("out/sidecar/index.js missing — run `npm run build` first");
-    ("node".into(), dev.to_string_lossy().into_owned())
+    (node_program(), dev.to_string_lossy().into_owned())
 }
 
 fn build_app_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
@@ -98,15 +112,29 @@ fn build_app_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     }
 
     let file = Submenu::new(app, "File", true)?;
-    file.append(&nav("Add Git Account…", "accounts:add-account", Some("CmdOrCtrl+N")))?;
-    file.append(&nav("Add Host…", "hosts:add-host", Some("CmdOrCtrl+Shift+N")))?;
+    file.append(&nav(
+        "Add Git Account…",
+        "accounts:add-account",
+        Some("CmdOrCtrl+N"),
+    ))?;
+    file.append(&nav(
+        "Add Host…",
+        "hosts:add-host",
+        Some("CmdOrCtrl+Shift+N"),
+    ))?;
     file.append(&nav("Generate SSH Key…", "keys:generate-key", None))?;
     file.append(&nav("Scan Host Keys…", "known-hosts:scan-host", None))?;
     file.append(&PredefinedMenuItem::separator(app)?)?;
     file.append(&nav("Edit Raw SSH Config", "hosts:raw-config", None))?;
     file.append(&nav("Settings…", "settings", Some("CmdOrCtrl+,")))?;
     file.append(&PredefinedMenuItem::separator(app)?)?;
-    file.append(&MenuItem::with_id(app, "app:quit", "Quit Lanyard", true, Some("CmdOrCtrl+Q"))?)?;
+    file.append(&MenuItem::with_id(
+        app,
+        "app:quit",
+        "Quit Lanyard",
+        true,
+        Some("CmdOrCtrl+Q"),
+    )?)?;
 
     let edit = Submenu::new(app, "Edit", true)?;
     for item in [
@@ -122,7 +150,13 @@ fn build_app_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     }
 
     let view = Submenu::new(app, "View", true)?;
-    view.append(&MenuItem::with_id(app, "cmd:palette", "Command Palette…", true, Some("CmdOrCtrl+K"))?)?;
+    view.append(&MenuItem::with_id(
+        app,
+        "cmd:palette",
+        "Command Palette…",
+        true,
+        Some("CmdOrCtrl+K"),
+    )?)?;
     view.append(&PredefinedMenuItem::separator(app)?)?;
     view.append(&PredefinedMenuItem::fullscreen(app, None)?)?;
     if cfg!(debug_assertions) {
@@ -190,7 +224,11 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .show_menu_on_left_click(false)
                 .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } = event {
+                    if let TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        ..
+                    } = event
+                    {
                         tray::show_window(tray.app_handle(), None);
                     }
                 })
@@ -234,7 +272,10 @@ pub fn run() {
                     let sidecar = h.state::<Arc<sidecar::Sidecar>>().inner().clone();
                     let tray = h.state::<tauri::tray::TrayIcon>().inner().clone();
                     tray::refresh_tray(&h, &tray, &sidecar);
-                    h.state::<TrayRefreshPending>().inner().0.store(false, Ordering::SeqCst);
+                    h.state::<TrayRefreshPending>()
+                        .inner()
+                        .0
+                        .store(false, Ordering::SeqCst);
                 });
             });
 

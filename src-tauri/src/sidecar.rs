@@ -23,12 +23,25 @@ pub struct Sidecar {
 }
 
 impl Sidecar {
-    pub fn spawn(app: AppHandle, program: &str, script: &str, extra_env: &[(&str, &str)]) -> std::io::Result<Arc<Self>> {
+    pub fn spawn(
+        app: AppHandle,
+        program: &str,
+        script: &str,
+        extra_env: &[(&str, &str)],
+    ) -> std::io::Result<Arc<Self>> {
         let mut cmd = Command::new(program);
         cmd.arg(script)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit());
+        // node.exe is a console program: without this, Windows opens a console
+        // window for it next to the (windowless-subsystem) app.
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
         for (k, v) in extra_env {
             cmd.env(k, v);
         }
@@ -40,13 +53,17 @@ impl Sidecar {
         let reader_pending = Arc::clone(&pending);
         std::thread::spawn(move || {
             for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-                let Ok(v) = serde_json::from_str::<Value>(&line) else { continue };
+                let Ok(v) = serde_json::from_str::<Value>(&line) else {
+                    continue;
+                };
                 if let Some(id) = v.get("id").and_then(Value::as_u64) {
                     let tx = reader_pending.lock().unwrap().remove(&id);
                     if let Some(tx) = tx {
                         let _ = tx.send(v);
                     }
-                } else if let (Some(event), Some(payload)) = (v.get("event").and_then(Value::as_str), v.get("payload")) {
+                } else if let (Some(event), Some(payload)) =
+                    (v.get("event").and_then(Value::as_str), v.get("payload"))
+                {
                     let _ = app.emit(event, payload.clone());
                 }
             }

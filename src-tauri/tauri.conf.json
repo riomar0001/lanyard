@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Lanyard",
-  "version": "1.0.0",
+  "version": "../package.json",
   "identifier": "dev.riomar.lanyard",
   "build": {
-    "beforeDevCommand": "npm run build:sidecar && npm run dev:renderer",
+    "beforeDevCommand": "node scripts/fetch-node.mjs && npm run build:sidecar && npm run dev:renderer",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../out/renderer"
   },
@@ -30,11 +30,11 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis", "dmg", "appimage"],
     "icon": ["../resources/icon.png", "../resources/icon.ico"],
     "resources": {
-      "../out/sidecar": "sidecar",
-      "../resources/cli": "cli"
-    }
+      "../out/sidecar": "sidecar"
+    },
+    "externalBin": ["binaries/node"]
   }
 }

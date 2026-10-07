@@ -10,3 +10,4 @@ out/
 *.tsbuildinfo
 src-tauri/target/
 .hermes/
+src-tauri/binaries/
