@@ -4,18 +4,15 @@ All notable changes to Lanyard are listed here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
-### Added
-
-- A user guide with screenshots, published as the [GitHub wiki](https://github.com/riomar0001/lanyard/wiki) from `docs/wiki`.
-- A new README, CONTRIBUTING.md, docs/ARCHITECTURE.md, and issue and pull request templates.
-
-### Changed
-
-- New app description, shown in Settings → About and in `lanyard --help`.
-
-## [1.0.0-beta.2] - 2026-10-07
+## [1.1.0-beta.1] - 2026-10-07
 
 The first public build.
+
+### Website and docs
+
+- The [Lanyard website](https://lanyard.riomar.dev) with direct downloads that follow each new release, in light and dark mode.
+- A user guide with screenshots, on the website and in the [GitHub wiki](https://github.com/riomar0001/lanyard/wiki), both from `docs/wiki`.
+- README, CONTRIBUTING.md, docs/ARCHITECTURE.md, a security policy with a code signing policy, and issue and pull request templates.
 
 ### Git accounts
 
@@ -50,5 +47,5 @@ The first public build.
 - Passphrases are kept off the command line on Linux and macOS.
 - See [SECURITY.md](SECURITY.md) for the full audit.
 
-[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.2...HEAD
-[1.0.0-beta.2]: https://github.com/riomar0001/lanyard/releases/tag/v1.0.0-beta.2
+[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.1.0-beta.1...HEAD
+[1.1.0-beta.1]: https://github.com/riomar0001/lanyard/releases/tag/v1.1.0-beta.1

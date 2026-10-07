@@ -1,9 +1,9 @@
 # Release from a build branch.
 #
 # Creating (or pushing to) a branch named build-v<version>, for example
-# build-v1.0.0-beta, builds Lanyard <version> for Windows, macOS and Linux and
+# build-v1.1.0-beta.1, builds Lanyard <version> for Windows, macOS and Linux and
 # publishes it as the GitHub release v<version>. Versions with a suffix
-# (1.0.0-beta, 2.1.0-rc.1) are marked as prereleases.
+# (1.1.0-beta.1, 2.0.0-rc.1) are marked as prereleases.
 #
 # Pushing to the branch again rebuilds the same version: the tag moves to the
 # new commit and the release files are replaced.
@@ -407,6 +407,12 @@ jobs:
             if [[ ! "$tag" =~ ^[A-Za-z][A-Za-z0-9-]*$ ]]; then tag=next; fi
           fi
           npm publish "npm/lanyard-ssh-$VERSION.tgz" --access public --tag "$tag" --provenance
+          # While only prereleases exist there is no `latest`, and a plain
+          # `npm install lanyard-ssh` would fail; point it at this version.
+          if [[ "$tag" != latest && -z "$(npm view lanyard-ssh dist-tags.latest 2> /dev/null)" ]]; then
+            npm dist-tag add "lanyard-ssh@$VERSION" latest ||
+              echo "::warning::No latest tag on npm; run: npm dist-tag add lanyard-ssh@$VERSION latest"
+          fi
           {
             echo "Published [lanyard-ssh@$VERSION](https://www.npmjs.com/package/lanyard-ssh/v/$VERSION) to npm with the \`$tag\` tag."
             echo
