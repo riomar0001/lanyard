@@ -98,7 +98,7 @@ describe('tray Hosts submenu', () => {
     const items = buildHostsMenu(data, a);
     const personal = sub(items[4]);
     expect(labels(personal)).toEqual(['Test (ssh -T)', 'Use Personal']);
-    personal[1].click!({} as never, undefined, {});
+    personal[1].click!({}, undefined, {});
     expect(a.useAccount).toHaveBeenCalledWith(github, 'Personal');
     expect(sub(items[5])[1]).toMatchObject({ label: 'Active GitHub account', enabled: false });
   });
@@ -108,7 +108,7 @@ describe('tray Hosts submenu', () => {
     const own = sub(buildHostsMenu(data, a)[7]);
     const riomar = own.find((i) => i.label === 'riomar_id_ed25519')!;
     expect(riomar.checked).toBe(true);
-    own.find((i) => i.label === '924group_id_ed25519')!.click!({} as never, undefined, {});
+    own.find((i) => i.label === '924group_id_ed25519')!.click!({}, undefined, {});
     expect(a.setKey).toHaveBeenCalledWith('github.com', keys[1]);
   });
 
@@ -117,7 +117,7 @@ describe('tray Hosts submenu', () => {
     const items = buildHostsMenu({ ...data, hosts: [host('prod', { hostName: '203.0.113.10' })], providers: [] }, a);
     expect(labels(items)).toEqual(['Servers', 'prod  →  203.0.113.10']);
     const menu = sub(items[1]);
-    menu[0].click!({} as never, undefined, {});
+    menu[0].click!({}, undefined, {});
     expect(a.connect).toHaveBeenCalledWith('prod');
     expect(menu.find((i) => i.label === 'SSH default keys')?.checked).toBe(true);
   });

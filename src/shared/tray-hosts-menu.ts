@@ -48,9 +48,7 @@ function keyRadios(h: HostEntry, data: HostsMenuData, actions: HostsMenuActions)
       checked: k === current,
       click: () => actions.setKey(h.alias, k),
     })),
-    ...(missing
-      ? [{ label: `${missing} (not in ~/.ssh)`, type: 'radio', checked: true, enabled: false } as MenuItemSpec]
-      : []),
+    ...(missing ? [{ label: `${missing} (not in ~/.ssh)`, type: 'radio', checked: true, enabled: false } as MenuItemSpec] : []),
     { label: 'SSH default keys', type: 'radio', checked: !h.identityFile, click: () => actions.setKey(h.alias, null) },
   ];
 }

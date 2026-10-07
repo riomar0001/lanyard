@@ -70,12 +70,15 @@ rl.on('line', (line) => {
   void (async () => {
     let req: Request;
     try {
-      req = JSON.parse(line);
+      req = JSON.parse(line) as Request;
     } catch {
       return;
     }
-    const group = (api as unknown as Record<string, Record<string, unknown>>)[req.namespace];
-    const fn = group?.[req.method];
+    // Only the API's own namespaces and methods: never inherited properties
+    // such as __proto__ or constructor.
+    const groups = api as unknown as Record<string, Record<string, unknown>>;
+    const group = typeof req.namespace === 'string' && Object.hasOwn(groups, req.namespace) ? groups[req.namespace] : undefined;
+    const fn = group && typeof req.method === 'string' && Object.hasOwn(group, req.method) ? group[req.method] : undefined;
     if (typeof fn !== 'function') {
       send({ id: req.id, ok: false, error: `Unknown method ${req.namespace}.${req.method}` });
       return;

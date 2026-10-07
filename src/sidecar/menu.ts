@@ -45,20 +45,18 @@ export function traySpec(): TraySpec {
   const items: TrayMenuItem[] = [
     { id: 'app:open', label: 'Open Lanyard' },
     { type: 'separator' },
-    ...providers.map(
-      (p): TrayMenuItem => ({
-        label: `${p.name}  ·  ${p.active ?? 'none'}`,
-        submenu: [
-          ...p.accounts.map((a): TrayMenuItem => ({
-            id: `use:${p.id}:${a.name}`,
-            label: a.name + (a.lastTest?.username ? `  (${a.lastTest.username})` : ''),
-            type: 'radio',
-            checked: a.active,
-          })),
-          { id: `use:${p.id}:`, label: 'None (use default SSH keys)', type: 'radio', checked: !p.active },
-        ],
-      }),
-    ),
+    ...providers.map((p): TrayMenuItem => ({
+      label: `${p.name}  ·  ${p.active ?? 'none'}`,
+      submenu: [
+        ...p.accounts.map((a): TrayMenuItem => ({
+          id: `use:${p.id}:${a.name}`,
+          label: a.name + (a.lastTest?.username ? `  (${a.lastTest.username})` : ''),
+          type: 'radio',
+          checked: a.active,
+        })),
+        { id: `use:${p.id}:`, label: 'None (use default SSH keys)', type: 'radio', checked: !p.active },
+      ],
+    })),
     ...(providers.length ? [] : [{ label: 'No git accounts yet', enabled: false } as TrayMenuItem]),
     { id: 'test-active', label: 'Test active accounts', enabled: providers.some((p) => p.active) },
     { type: 'separator' },
@@ -111,17 +109,13 @@ export function buildHostsSpec(hosts: HostEntry[], keys: KeyInfo[], providers: P
     const missing = h.identityFile && !current ? (h.identityFile.split(/[\\/]/).pop() ?? null) : null;
     return [
       { label: 'SSH key', enabled: false },
-      ...keys.slice(0, 25).map(
-        (k): TrayMenuItem => ({
-          id: `setkey:${h.alias}:${k.path ?? k.name}`,
-          label: `${k.name}${k.encrypted ? '  🔒' : ''}`,
-          type: 'radio',
-          checked: k === current,
-        }),
-      ),
-      ...(missing
-        ? [{ label: `${missing} (not in ~/.ssh)`, type: 'radio' as const, checked: true, enabled: false }]
-        : []),
+      ...keys.slice(0, 25).map((k): TrayMenuItem => ({
+        id: `setkey:${h.alias}:${k.path ?? k.name}`,
+        label: `${k.name}${k.encrypted ? '  🔒' : ''}`,
+        type: 'radio',
+        checked: k === current,
+      })),
+      ...(missing ? [{ label: `${missing} (not in ~/.ssh)`, type: 'radio' as const, checked: true, enabled: false }] : []),
       { id: `setkey:${h.alias}:`, label: 'SSH default keys', type: 'radio', checked: !h.identityFile },
     ];
   };
@@ -129,41 +123,33 @@ export function buildHostsSpec(hosts: HostEntry[], keys: KeyInfo[], providers: P
   const items: TrayMenuItem[] = [{ label: 'Servers', enabled: false }];
   if (servers.length) {
     items.push(
-      ...servers.slice(0, 30).map(
-        (h): TrayMenuItem => ({
-          label: h.hostName ? `${h.alias}  →  ${h.hostName}` : h.alias,
-          submenu: [
-            { id: `connect:${h.alias}`, label: `Connect to ${h.hostName || h.alias}` },
-            { id: `test:${h.alias}`, label: 'Test login' },
-            { type: 'separator' },
-            ...keyRadios(h),
-          ],
-        }),
-      ),
+      ...servers.slice(0, 30).map((h): TrayMenuItem => ({
+        label: h.hostName ? `${h.alias}  →  ${h.hostName}` : h.alias,
+        submenu: [
+          { id: `connect:${h.alias}`, label: `Connect to ${h.hostName || h.alias}` },
+          { id: `test:${h.alias}`, label: 'Test login' },
+          { type: 'separator' },
+          ...keyRadios(h),
+        ],
+      })),
     );
   } else {
     items.push({ id: 'nav:hosts:add-host', label: 'Add server…' });
   }
 
   const accountItems = providers.flatMap((p) =>
-    p.accounts.map(
-      (a): TrayMenuItem => ({
-        label: `${a.alias}${a.active ? '  ·  active' : ''}`,
-        submenu: [
-          { id: `test:${a.alias}`, label: 'Test (ssh -T)' },
-          a.active
-            ? { label: `Active ${p.name} account`, enabled: false }
-            : { id: `use:${p.id}:${a.name}`, label: `Use ${a.name}` },
-        ],
-      }),
-    ),
+    p.accounts.map((a): TrayMenuItem => ({
+      label: `${a.alias}${a.active ? '  ·  active' : ''}`,
+      submenu: [
+        { id: `test:${a.alias}`, label: 'Test (ssh -T)' },
+        a.active ? { label: `Active ${p.name} account`, enabled: false } : { id: `use:${p.id}:${a.name}`, label: `Use ${a.name}` },
+      ],
+    })),
   );
-  const ownItems = ownGitBlocks.map(
-    (h): TrayMenuItem => ({
-      label: `${h.alias}${h.aliases.some((x) => managedAliases.has(x)) ? '  ·  overridden' : ''}`,
-      submenu: [{ id: `test:${h.alias}`, label: 'Test (ssh -T)' }, { type: 'separator' }, ...keyRadios(h)],
-    }),
-  );
+  const ownItems = ownGitBlocks.map((h): TrayMenuItem => ({
+    label: `${h.alias}${h.aliases.some((x) => managedAliases.has(x)) ? '  ·  overridden' : ''}`,
+    submenu: [{ id: `test:${h.alias}`, label: 'Test (ssh -T)' }, { type: 'separator' }, ...keyRadios(h)],
+  }));
   if (accountItems.length || ownItems.length) {
     items.push({ type: 'separator' }, { label: 'Git hosts', enabled: false }, ...accountItems, ...ownItems);
   }

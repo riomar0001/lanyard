@@ -34,7 +34,12 @@ function windowsShim(t: ShimTarget): string {
 }
 
 function posixShim(t: ShimTarget): string {
-  return ['#!/bin/sh', `# ${SHIM_MARKER} (Settings > Command line). Safe to delete.`, `exec ${shQuote(t.exe)} ${shQuote(t.script)} "$@"`, ''].join('\n');
+  return [
+    '#!/bin/sh',
+    `# ${SHIM_MARKER} (Settings > Command line). Safe to delete.`,
+    `exec ${shQuote(t.exe)} ${shQuote(t.script)} "$@"`,
+    '',
+  ].join('\n');
 }
 
 export function renderShims(target: ShimTarget, platform: NodeJS.Platform = process.platform): Shim[] {

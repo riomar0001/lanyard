@@ -41,9 +41,7 @@ describe('CLI launcher shims', () => {
     expect(lanyard.fileName).toBe('lanyard.cmd');
     expect(lny.fileName).toBe('lny.cmd');
     expect(lanyard.content).toContain(SHIM_MARKER);
-    expect(lanyard.content).toContain(
-      '"C:\\Program Files\\Lanyard\\node.exe" "C:\\Program Files\\Lanyard\\resources\\cli\\lanyard.js" %*',
-    );
+    expect(lanyard.content).toContain('"C:\\Program Files\\Lanyard\\node.exe" "C:\\Program Files\\Lanyard\\resources\\cli\\lanyard.js" %*');
     expect(lanyard.content).toMatch(/\r\n$/);
     expect(lanyard.content).not.toContain('ELECTRON_RUN_AS_NODE');
   });

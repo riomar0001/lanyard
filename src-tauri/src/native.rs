@@ -10,9 +10,7 @@ use tauri_plugin_shell::ShellExt;
 
 /// Validate a #rrggbb colour (parity with the old setTitleBarColors guard).
 fn is_hex_color(s: &str) -> bool {
-    s.len() == 7
-        && s.starts_with('#')
-        && s[1..].chars().all(|c| c.is_ascii_hexdigit())
+    s.len() == 7 && s.starts_with('#') && s[1..].chars().all(|c| c.is_ascii_hexdigit())
 }
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -39,7 +37,9 @@ async fn pick_async(
     tauri::async_runtime::spawn_blocking(move || {
         // Bound the wait so a never-firing dialog callback can't pin a pooled
         // thread forever.
-        rx.recv_timeout(std::time::Duration::from_secs(300)).ok().flatten()
+        rx.recv_timeout(std::time::Duration::from_secs(300))
+            .ok()
+            .flatten()
     })
     .await
     .ok()
@@ -54,23 +54,36 @@ pub async fn app_call(app: &AppHandle, method: &str, args: Value) -> Result<Valu
             if !url.starts_with("https://") {
                 return Err("Only https links can be opened.".into());
             }
-            app.shell()
-                .open(url, None)
-                .map_err(|e| e.to_string())?;
+            app.shell().open(url, None).map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
         "copy" => {
-            let text = argv.first().and_then(Value::as_str).unwrap_or("").to_string();
-            app.clipboard().write_text(text).map_err(|e| e.to_string())?;
+            let text = argv
+                .first()
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
+            app.clipboard()
+                .write_text(text)
+                .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
         "pickDirectory" => {
-            let path =
-                pick_async(app, |b, tx| b.pick_folder(move |p| { let _ = tx.send(p); })).await;
+            let path = pick_async(app, |b, tx| {
+                b.pick_folder(move |p| {
+                    let _ = tx.send(p);
+                })
+            })
+            .await;
             Ok(path.map(|p| json!(p.to_string())).unwrap_or(Value::Null))
         }
         "pickFile" => {
-            let path = pick_async(app, |b, tx| b.pick_file(move |p| { let _ = tx.send(p); })).await;
+            let path = pick_async(app, |b, tx| {
+                b.pick_file(move |p| {
+                    let _ = tx.send(p);
+                })
+            })
+            .await;
             Ok(path.map(|p| json!(p.to_string())).unwrap_or(Value::Null))
         }
         "revealPath" => {
@@ -79,7 +92,11 @@ pub async fn app_call(app: &AppHandle, method: &str, args: Value) -> Result<Valu
             if !p.exists() {
                 return Err(format!("Not found: {target}"));
             }
-            let dir = if p.is_dir() { p } else { p.parent().unwrap_or(p) };
+            let dir = if p.is_dir() {
+                p
+            } else {
+                p.parent().unwrap_or(p)
+            };
             app.shell()
                 .open(dir.to_string_lossy(), None)
                 .map_err(|e| e.to_string())?;
@@ -113,7 +130,10 @@ pub async fn app_call(app: &AppHandle, method: &str, args: Value) -> Result<Valu
             let y = argv.get(1).and_then(Value::as_f64).unwrap_or(0.0);
             if let Some(w) = app.get_webview_window("main") {
                 if let Some(menu) = app.menu() {
-                    let _ = w.popup_menu_at(&menu, tauri::Position::Logical(tauri::LogicalPosition::new(x, y)));
+                    let _ = w.popup_menu_at(
+                        &menu,
+                        tauri::Position::Logical(tauri::LogicalPosition::new(x, y)),
+                    );
                 }
             }
             Ok(Value::Null)

@@ -8,3 +8,5 @@ package-lock.json
 website/dist/
 website/src/generated/
 website/public/
+src-tauri/gen/
+src-tauri/target/

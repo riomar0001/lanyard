@@ -32,7 +32,9 @@ pub struct TraySpec {
 /// both accept any `IsMenuItem`, and `MenuItemKind` boxes the variants.
 fn make_item(app: &AppHandle, item: &TrayMenuItemSpec) -> tauri::Result<MenuItemKind<tauri::Wry>> {
     if item.kind.as_deref() == Some("separator") {
-        return Ok(MenuItemKind::Predefined(PredefinedMenuItem::separator(app)?));
+        return Ok(MenuItemKind::Predefined(PredefinedMenuItem::separator(
+            app,
+        )?));
     }
     let label = item.label.clone().unwrap_or_default();
     let enabled = item.enabled.unwrap_or(true);
@@ -66,13 +68,14 @@ fn make_item(app: &AppHandle, item: &TrayMenuItemSpec) -> tauri::Result<MenuItem
 /// Rebuild the tray menu from the sidecar's current spec.
 pub fn refresh_tray(app: &AppHandle, tray: &TrayIcon, sidecar: &Arc<Sidecar>) {
     let spec_value = sidecar.call("menu", "traySpec", serde_json::json!([]));
-    let spec: TraySpec = match serde_json::from_value(spec_value.get("data").cloned().unwrap_or_default()) {
-        Ok(s) => s,
-        Err(err) => {
-            eprintln!("tray: bad spec: {err}");
-            return;
-        }
-    };
+    let spec: TraySpec =
+        match serde_json::from_value(spec_value.get("data").cloned().unwrap_or_default()) {
+            Ok(s) => s,
+            Err(err) => {
+                eprintln!("tray: bad spec: {err}");
+                return;
+            }
+        };
     let _ = tray.set_tooltip(Some(&spec.tooltip));
     match build_menu(app, &spec.items) {
         Ok(menu) => {
@@ -120,7 +123,10 @@ pub fn show_window(app: &AppHandle, nav: Option<(String, Option<String>)>) {
         let _ = w.show();
         let _ = w.set_focus();
         if let Some((page, intent)) = nav {
-            let _ = app.emit("lanyard:navigate", serde_json::json!({ "page": page, "intent": intent }));
+            let _ = app.emit(
+                "lanyard:navigate",
+                serde_json::json!({ "page": page, "intent": intent }),
+            );
         }
     }
 }

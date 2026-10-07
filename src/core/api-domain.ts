@@ -28,10 +28,7 @@ export function openInTerminal(cmd: string, args: string[], title: string): void
   core.terminal.openTerminal(cmd, args, { preference: core.settings.get().terminal, title });
 }
 
-type DomainApi = Omit<
-  LanyardApi,
-  'app'
-> & {
+type DomainApi = Omit<LanyardApi, 'app'> & {
   app: Pick<LanyardApi['app'], 'info' | 'about' | 'connect' | 'addKeyInTerminal'>;
 };
 
