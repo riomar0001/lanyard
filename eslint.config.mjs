@@ -49,9 +49,9 @@ export default tseslint.config(
     },
   },
 
-  // Node: the core, CLI, Electron main/preload, tests and tooling.
+  // Node: the core, the CLI, the app's sidecar, tests and tooling.
   {
-    files: ['src/core/**', 'src/cli/**', 'src/main/**', 'src/preload/**', 'test/**', '*.config.ts', '*.config.mjs'],
+    files: ['src/core/**', 'src/cli/**', 'src/sidecar/**', 'test/**', '*.config.ts', '*.config.mjs'],
     languageOptions: { globals: globals.node },
   },
 

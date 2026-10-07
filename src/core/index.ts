@@ -1,5 +1,5 @@
 /**
- * Public facade of the core. The Electron main process and the CLI both talk
+ * Public facade of the core. The app's Node sidecar and the CLI both talk
  * to SSH exclusively through this module; nothing outside src/core touches
  * ~/.ssh directly.
  */

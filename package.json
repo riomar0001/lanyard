@@ -49,7 +49,7 @@
     "dev:renderer": "vite --config vite.renderer.config.ts",
     "build:renderer": "vite build --config vite.renderer.config.ts",
     "build:sidecar": "esbuild src/sidecar/index.ts --bundle --platform=node --format=cjs --target=node20 --outfile=out/sidecar/index.js",
-    "build:cli": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --target=node20 --outfile=out/main/cli.js --external:electron",
+    "build:cli": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --target=node20 --outfile=out/main/cli.js",
     "fetch:node": "node scripts/fetch-node.mjs",
     "build": "npm run build:renderer && npm run build:sidecar && npm run build:cli",
     "tauri:dev": "tauri dev",

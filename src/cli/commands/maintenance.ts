@@ -1,6 +1,8 @@
 /** Backups, config file utilities and launching the desktop app. */
 
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import * as out from '../utils/output';
 import { detached } from '../utils/system';
 import type { CommandModule } from '../types';
@@ -8,18 +10,48 @@ import type { CommandModule } from '../types';
 const { c } = out;
 
 const NO_DESKTOP_APP =
-  'The desktop app is not part of this install (e.g. `npx lanyard-ssh`). ' +
-  'Install the Lanyard desktop app to get the window and tray - every feature is also available as a command: `lanyard --help`.';
+  "Couldn't find the Lanyard desktop app. Install it from https://lanyard.riomar.dev/download/ " +
+  '(or set LANYARD_APP_EXE to its path) - every feature is also available as a command: `lanyard --help`.';
 
 /**
- * Open the desktop app. The CLI learns where the app lives from the shims the
- * installer wrote (LANYARD_APP_EXE points at the desktop binary); without it
- * there is no window to open.
+ * Where the desktop app is usually installed, most likely first. On macOS the
+ * entries are .app bundles (opened with `open`); elsewhere executables.
  */
+export function desktopAppCandidates(
+  platform: NodeJS.Platform = process.platform,
+  env: NodeJS.ProcessEnv = process.env,
+  home: string = os.homedir(),
+): string[] {
+  const explicit = env.LANYARD_APP_EXE ? [env.LANYARD_APP_EXE] : [];
+  if (platform === 'win32') {
+    // The installer's per-user location, then a per-machine install.
+    const roots = [env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local'), env.ProgramFiles ?? 'C:\\Program Files'];
+    return [...explicit, ...roots.flatMap((root) => ['lanyard.exe', 'Lanyard.exe'].map((exe) => path.win32.join(root, 'Lanyard', exe)))];
+  }
+  if (platform === 'darwin') return [...explicit, '/Applications/Lanyard.app', path.posix.join(home, 'Applications', 'Lanyard.app')];
+  // Linux: the AppImage wherever people usually keep one.
+  const dirs = [path.posix.join(home, 'Applications'), path.posix.join(home, '.local', 'bin'), '/opt'];
+  const appImages = dirs.flatMap((dir) => {
+    try {
+      return fs
+        .readdirSync(dir)
+        .filter((f) => /^lanyard.*\.appimage$/i.test(f))
+        .sort()
+        .reverse() // newest version first
+        .map((f) => path.posix.join(dir, f));
+    } catch {
+      return [];
+    }
+  });
+  return [...explicit, ...appImages];
+}
+
+/** Open the desktop app, wherever it was installed. */
 export function launchGui(): void {
-  const exe = process.env.LANYARD_APP_EXE;
-  if (!exe || !fs.existsSync(exe)) throw new Error(NO_DESKTOP_APP);
-  detached(exe, []);
+  const app = desktopAppCandidates().find((p) => fs.existsSync(p));
+  if (!app) throw new Error(NO_DESKTOP_APP);
+  if (process.platform === 'darwin' && app.endsWith('.app')) detached('open', ['-a', app]);
+  else detached(app, []);
 }
 
 export const register: CommandModule = (program, core) => {

@@ -1,7 +1,8 @@
 /**
- * The contract between the Electron main process and the renderer.
+ * The contract between the app's backend (the Tauri shell and its Node sidecar)
+ * and the renderer.
  *
- * The main process implements `LanyardApi`; the renderer gets a typed client for
+ * The sidecar implements `LanyardApi`; the renderer gets a typed client for
  * it. Calls travel over a single channel as (namespace, method, args) and the
  * reply is an `IpcResponse` envelope so error codes survive the trip.
  */

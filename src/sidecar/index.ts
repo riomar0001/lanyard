@@ -35,13 +35,16 @@ interface Request {
   args: unknown[];
 }
 
+/**
+ * How to run the CLI, shown in Settings. A source checkout runs bin/lanyard.js
+ * (this file is out/sidecar/index.js there); the installed app doesn't ship the
+ * CLI, which comes from npm.
+ */
 function cliHint(): string {
   const here = path.dirname(process.argv[1] ?? __filename);
-  // Packaged: sidecar lives in resources/sidecar, CLI shims in resources/cli.
-  const shim = process.platform === 'win32' ? 'lanyard.cmd' : 'lanyard';
-  const packagedShim = path.join(here, '..', 'cli', shim);
-  if (fs.existsSync(packagedShim)) return `"${packagedShim}"`;
-  return `node "${path.join(process.cwd(), 'bin', 'lanyard.js')}"`;
+  const checkoutCli = path.resolve(here, '..', '..', 'bin', 'lanyard.js');
+  if (fs.existsSync(checkoutCli)) return `node "${checkoutCli}"`;
+  return 'npx lanyard-ssh';
 }
 
 const api = createDomainApi({

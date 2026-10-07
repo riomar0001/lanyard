@@ -1,5 +1,5 @@
 /**
- * Domain types shared by the core, the CLI, the Electron main process and the
+ * Domain types shared by the core, the CLI, the app's sidecar and the
  * React renderer. Keep this file free of runtime code and Node/DOM imports.
  */
 
