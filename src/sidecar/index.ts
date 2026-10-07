@@ -95,3 +95,7 @@ rl.on('line', (line) => {
     }
   })();
 });
+// stdin closes when the app quits, crashes or is killed. Exit with it: the
+// file watchers would otherwise keep this process alive, holding node.exe
+// open so the next install cannot replace it.
+rl.on('close', () => process.exit(0));

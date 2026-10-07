@@ -2041,8 +2041,9 @@ dependencies = [
 
 [[package]]
 name = "lanyard"
-version = "1.0.0-beta.1"
+version = "1.0.0-beta.2"
 dependencies = [
+ "auto-launch",
  "serde",
  "serde_json",
  "tauri",

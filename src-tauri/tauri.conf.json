@@ -39,7 +39,8 @@
     "windows": {
       "nsis": {
         "installerIcon": "../resources/icon.ico",
-        "uninstallerIcon": "../resources/icon.ico"
+        "uninstallerIcon": "../resources/icon.ico",
+        "installerHooks": "windows/hooks.nsh"
       }
     }
   }

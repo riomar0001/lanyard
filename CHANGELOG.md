@@ -4,6 +4,15 @@ All notable changes to Lanyard are listed here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-10-07
+
+### Fixed
+
+- The Windows installer and uninstaller show the Lanyard icon instead of the generic installer icon.
+- Lanyard's background helper (`node.exe`) now exits when the app quits. It used to keep running, which made upgrades fail with "Error opening file for writing: …\Lanyard\node.exe".
+- The Windows installer stops a background helper left running by an older version before it copies files, so upgrading from 1.0.0-beta.1 works.
+- Windows: the "Start at login" entry left by the old Electron build pointed to a file that no longer exists, so it showed no icon in Task Manager's Startup apps and did nothing at login. Lanyard now removes it and, if it was enabled, turns on its own entry instead.
+
 ## [1.0.0-beta.1] - 2026-10-07
 
 The first public build.
@@ -48,5 +57,6 @@ The first public build.
 - Passphrases are kept off the command line on Linux and macOS.
 - See [SECURITY.md](SECURITY.md) for the full audit.
 
-[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.1...HEAD
+[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.2...HEAD
+[1.0.0-beta.2]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/riomar0001/lanyard/releases/tag/v1.0.0-beta.1

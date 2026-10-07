@@ -338,6 +338,11 @@ pub fn run() {
                 });
             });
 
+            #[cfg(windows)]
+            if let Err(e) = tray::migrate_legacy_autostart(app.handle()) {
+                eprintln!("autostart migration failed: {e}");
+            }
+
             // Start hidden with --hidden (login autostart).
             let hidden = std::env::args().any(|a| a == "--hidden");
             if !hidden {
