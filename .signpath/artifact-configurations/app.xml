@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  SignPath artifact configuration "app": signs Lanyard.exe in the unpacked
-  Windows app (the GitHub artifact windows-app-unsigned) before the installer
+  SignPath artifact configuration "app": signs the Tauri app binary
+  (lanyard.exe, the GitHub artifact windows-app-unsigned) before the installer
   is built from it. Create it in SignPath with the slug "app".
 
-  The product name and version are enforced, as SignPath Foundation requires.
-  electron-builder writes a numeric product version into Lanyard.exe
-  (1.2.0-beta.1 -> 1.2.0.0); the release workflow passes that value in.
-  Electron's own DLLs are upstream binaries and are left unsigned.
+  The product name and version are enforced, as SignPath Foundation requires;
+  the release workflow passes the release version (e.g. 1.2.0-beta.1). Check
+  the version Tauri writes into lanyard.exe on the first signed release, and
+  adjust product-version here if it uses a different form.
+  The bundled node.exe is an upstream binary, already signed by its publisher.
 -->
 <artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
   <parameters>
-    <parameter name="productVersion" required="true" />
+    <parameter name="version" required="true" />
   </parameters>
   <zip-file>
-    <pe-file path="Lanyard.exe" product-name="Lanyard" product-version="${productVersion}">
+    <pe-file path="lanyard.exe" product-name="Lanyard" product-version="${version}">
       <authenticode-sign />
     </pe-file>
   </zip-file>

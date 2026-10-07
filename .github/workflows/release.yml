@@ -76,21 +76,28 @@ jobs:
         include:
           - name: windows
             os: windows-latest
-            exe: release/win-unpacked/Lanyard.exe
-            asar: release/win-unpacked/resources/app.asar
-            files: release/*.exe
-          - name: macos # builds both arm64 and x64; the runner can launch the arm64 one
+            target: x86_64-pc-windows-msvc
+            bundle: nsis
+            smoke: true
+          - name: macos-arm64
             os: macos-latest
-            exe: release/mac-arm64/Lanyard.app/Contents/MacOS/Lanyard
-            asar: release/mac-arm64/Lanyard.app/Contents/Resources/app.asar
-            files: release/*.dmg
+            target: aarch64-apple-darwin
+            bundle: dmg
+            smoke: true
+          - name: macos-x64 # cross-built on the Apple Silicon runner
+            os: macos-latest
+            target: x86_64-apple-darwin
+            bundle: dmg
+            smoke: false
           - name: linux
-            os: ubuntu-latest
-            exe: release/linux-unpacked/lanyard
-            asar: release/linux-unpacked/resources/app.asar
-            files: release/*.AppImage
+            os: ubuntu-22.04 # oldest supported glibc, so the AppImage runs on more distros
+            target: x86_64-unknown-linux-gnu
+            bundle: appimage
+            smoke: true
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      TARGET: ${{ matrix.target }}
+      RELEASE_DIR: src-tauri/target/${{ matrix.target }}/release
       # Windows builds are code-signed through SignPath once the repository
       # variable SIGNPATH_ORGANIZATION_ID is set (CONTRIBUTING.md -> Code signing).
       SIGN_WINDOWS: ${{ matrix.name == 'windows' && vars.SIGNPATH_ORGANIZATION_ID != '' }}
@@ -100,28 +107,37 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.target }}
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
       - run: npm ci
       - name: Set the app version to ${{ env.VERSION }}
-        run: npm version "${{ env.VERSION }}" --no-git-tag-version --allow-same-version
+        shell: bash
+        run: npm version "$VERSION" --no-git-tag-version --allow-same-version
+      # The renderer and the Node sidecar, plus the Node runtime the app bundles.
       - run: npm run build
+      - run: node scripts/fetch-node.mjs --target "${{ matrix.target }}"
 
-      - name: Build installers
-        if: matrix.name != 'windows'
-        run: npx electron-builder --publish never
-
-      # Windows is built in two steps so both the app and its installer can be
-      # signed: SignPath signs files from GitHub Actions artifacts and can't
-      # sign inside an NSIS installer.
-      - name: Build the Windows app
-        if: matrix.name == 'windows'
-        run: npx electron-builder --win --dir --publish never
+      # Built in two steps (app, then installer) so Windows can sign both: SignPath
+      # signs files from GitHub Actions artifacts and can't reach inside an installer.
+      - name: Build the app
+        run: npx tauri build --ci --no-bundle --target "${{ matrix.target }}"
       - name: Upload the unsigned app for signing
         id: unsigned-app
         if: env.SIGN_WINDOWS == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: windows-app-unsigned
-          path: release/win-unpacked
+          path: ${{ env.RELEASE_DIR }}/lanyard.exe
           retention-days: 1
       - name: Sign the app (SignPath)
         if: env.SIGN_WINDOWS == 'true'
@@ -133,29 +149,25 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'lanyard' }}
           signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
           artifact-configuration-slug: app
-          # Lanyard.exe carries a numeric product version: 1.2.0-beta.1 -> 1.2.0.0
           parameters: |
-            productVersion: "${{ needs.version.outputs.numeric }}"
+            version: "${{ env.VERSION }}"
           github-artifact-id: ${{ steps.unsigned-app.outputs.artifact-id }}
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 3600
-          output-artifact-directory: release/win-signed
+          output-artifact-directory: signed-app
       - name: Use the signed app
         if: env.SIGN_WINDOWS == 'true'
         shell: bash
-        run: |
-          rm -rf release/win-unpacked
-          mv release/win-signed release/win-unpacked
-      - name: Build the Windows installer
-        if: matrix.name == 'windows'
-        run: npx electron-builder --win nsis --prepackaged release/win-unpacked --publish never
+        run: mv -f signed-app/lanyard.exe "$RELEASE_DIR/lanyard.exe"
+      - name: Build the installer
+        run: npx tauri bundle --ci --bundles ${{ matrix.bundle }} --target "${{ matrix.target }}"
       - name: Upload the unsigned installer for signing
         id: unsigned-installer
         if: env.SIGN_WINDOWS == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: windows-installer-unsigned
-          path: release/*.exe
+          path: ${{ env.RELEASE_DIR }}/bundle/nsis/*.exe
           retention-days: 1
       - name: Sign the installer (SignPath)
         if: env.SIGN_WINDOWS == 'true'
@@ -172,34 +184,47 @@ jobs:
           github-artifact-id: ${{ steps.unsigned-installer.outputs.artifact-id }}
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 3600
-          output-artifact-directory: release/installer-signed
+          output-artifact-directory: signed-installer
       - name: Use the signed installer and check the signatures
         if: env.SIGN_WINDOWS == 'true'
         shell: pwsh
         run: |
-          Move-Item -Force release/installer-signed/*.exe release/
-          foreach ($file in @('release/win-unpacked/Lanyard.exe') + (Get-ChildItem release/*.exe).FullName) {
+          Move-Item -Force signed-installer/*.exe "$env:RELEASE_DIR/bundle/nsis/"
+          foreach ($file in @("$env:RELEASE_DIR/lanyard.exe") + (Get-ChildItem "$env:RELEASE_DIR/bundle/nsis/*.exe").FullName) {
             $sig = Get-AuthenticodeSignature $file
             "{0}: {1} ({2})" -f $file, $sig.Status, $sig.SignerCertificate.Subject
             if ($sig.Status -ne 'Valid') { throw "$file is not validly signed" }
           }
-      # The installed lanyard command runs the app binary in Node mode on the
-      # CLI inside app.asar; check that works with the fuses set, and that the
-      # packaged app reports the release version.
-      - name: Smoke-test the packaged CLI
+
+      # The app runs its Node sidecar with the bundled runtime: check that pair
+      # works as laid out in the build (same files the installer packs).
+      - name: Smoke-test the bundled runtime and sidecar
+        if: matrix.smoke
         shell: bash
-        env:
-          APP_EXE: ${{ matrix.exe }}
-          APP_ASAR: ${{ matrix.asar }}
         run: |
-          reported=$(LANYARD_SSH_DIR="$RUNNER_TEMP/ssh" LANYARD_HOME="$RUNNER_TEMP/home" ELECTRON_RUN_AS_NODE=1 \
-            "$APP_EXE" "$APP_ASAR/bin/lanyard.js" --version)
-          echo "packaged CLI reports $reported"
-          [[ "$reported" == "$VERSION" ]] || { echo "::error::expected version $VERSION, got $reported"; exit 1; }
+          node_bin=$(ls "$RELEASE_DIR"/node "$RELEASE_DIR"/node.exe 2> /dev/null | head -1)
+          sidecar=$(ls "$RELEASE_DIR"/sidecar/index.js out/sidecar/index.js 2> /dev/null | head -1)
+          [[ -n "$node_bin" ]] || { echo "::error::no bundled node in $RELEASE_DIR"; ls "$RELEASE_DIR"; exit 1; }
+          echo "runtime: $node_bin ($("$node_bin" --version)), sidecar: $sidecar"
+          "$node_bin" scripts/smoke-sidecar.mjs "$node_bin" "$sidecar"
+
+      # Release files keep stable names (the website matches them):
+      #   Lanyard-Setup-<v>-x64.exe, Lanyard-<v>-arm64.dmg / -x64.dmg, Lanyard-<v>-x86_64.AppImage
+      - name: Collect the installer
+        shell: bash
+        run: |
+          mkdir -p dist
+          case "$TARGET" in
+            x86_64-pc-windows-msvc) cp "$RELEASE_DIR"/bundle/nsis/*.exe "dist/Lanyard-Setup-$VERSION-x64.exe" ;;
+            aarch64-apple-darwin) cp "$RELEASE_DIR"/bundle/dmg/*.dmg "dist/Lanyard-$VERSION-arm64.dmg" ;;
+            x86_64-apple-darwin) cp "$RELEASE_DIR"/bundle/dmg/*.dmg "dist/Lanyard-$VERSION-x64.dmg" ;;
+            x86_64-unknown-linux-gnu) cp "$RELEASE_DIR"/bundle/appimage/*.AppImage "dist/Lanyard-$VERSION-x86_64.AppImage" ;;
+          esac
+          ls -la dist
       - uses: actions/upload-artifact@v7
         with:
           name: lanyard-${{ matrix.name }}
-          path: ${{ matrix.files }}
+          path: dist/*
           if-no-files-found: error
           retention-days: 7
 
