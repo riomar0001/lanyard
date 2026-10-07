@@ -15,8 +15,8 @@ const EXAMPLES = [
   'lny connect prod             # lny is a short alias',
 ];
 
-const NPX = 'npx lanyard-ssh status';
-const NPM_INSTALL = 'npm install -g lanyard-ssh';
+const NPX = 'npx lanyard-cli status';
+const NPM_INSTALL = 'npm install -g lanyard-cli';
 
 /**
  * Settings > Command line: a reference, not an installer. The desktop app

@@ -1,5 +1,5 @@
 {
-  "name": "lanyard-ssh",
+  "name": "lanyard-cli",
   "productName": "Lanyard",
   "version": "1.0.0-beta.2",
   "description": "Wear the right identity everywhere: switch between GitHub, GitLab, Bitbucket and Hugging Face accounts in one click, and manage your remote SSH servers, keys, ssh-agent and known_hosts from a desktop app, the system tray or the command line.",
@@ -23,7 +23,7 @@
   "bin": {
     "lanyard": "bin/lanyard.js",
     "lny": "bin/lanyard.js",
-    "lanyard-ssh": "bin/lanyard.js"
+    "lanyard-cli": "bin/lanyard.js"
   },
   "files": [
     "bin/",

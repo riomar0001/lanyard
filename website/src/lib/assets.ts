@@ -8,7 +8,7 @@ export const ASSET_PATTERNS: Record<AssetKey, RegExp> = {
   macArm: /-arm64\.dmg$/,
   macIntel: /-x64\.dmg$/,
   linux: /\.AppImage$/,
-  npm: /^lanyard-ssh-.+\.tgz$/,
+  npm: /^lanyard-cli-.+\.tgz$/,
 };
 
 export interface GithubRelease {

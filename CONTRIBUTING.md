@@ -101,7 +101,7 @@ git push origin main:build-v1.2.0
 3. sets that version in the app;
 4. builds the Tauri app for each platform with its bundled Node runtime: the Windows installer (NSIS), the macOS DMGs (Apple Silicon and Intel) and the Linux AppImage, checks that the bundled runtime starts the sidecar, and builds and checks the npm tarball;
 5. publishes the GitHub release `v1.2.0` with the files, `SHA256SUMS.txt` and generated notes;
-6. publishes `lanyard-ssh@1.2.0` to npm (once set up, see below) and rebuilds the website.
+6. publishes `lanyard-cli@1.2.0` to npm (once set up, see below) and rebuilds the website.
 
 A version with a suffix (`1.2.0-beta.1`) is published as a prerelease. Pushing to the same branch again rebuilds that version, moves its tag and replaces its files.
 
@@ -132,12 +132,12 @@ Releases then include `SHA256SUMS.txt.asc`, and their notes say how to verify it
 
 ### npm
 
-Stable versions are published to npm as `latest`. Prereleases get a tag named after their label (`1.2.0-beta.1` → `beta`), so `npm install -g lanyard-ssh` keeps installing the stable version and testers use `npm install -g lanyard-ssh@beta`. npm never accepts the same version twice, so rebuilding a release skips npm.
+Stable versions are published to npm as `latest`. Prereleases get a tag named after their label (`1.2.0-beta.1` → `beta`), so `npm install -g lanyard-cli` keeps installing the stable version and testers use `npm install -g lanyard-cli@beta`. npm never accepts the same version twice, so rebuilding a release skips npm.
 
 Publishing is off until it is set up. Pick one way to authenticate:
 
-- **Trusted publishing (recommended, no token to leak or rotate):** on npmjs.com, open `lanyard-ssh` → **Settings → Trusted publishing**, add GitHub Actions with repository `riomar0001/lanyard` and workflow `release.yml`.
-- **Or a token:** create a granular access token on npmjs.com with read and write access to `lanyard-ssh`, and save it as the repository secret `NPM_TOKEN`.
+- **Trusted publishing (recommended, no token to leak or rotate):** on npmjs.com, open `lanyard-cli` → **Settings → Trusted publishing**, add GitHub Actions with repository `riomar0001/lanyard` and workflow `release.yml`.
+- **Or a token:** create a granular access token on npmjs.com with read and write access to `lanyard-cli`, and save it as the repository secret `NPM_TOKEN`.
 
 Then turn it on: **Settings → Secrets and variables → Actions → Variables**, add `NPM_PUBLISH` = `true`.
 

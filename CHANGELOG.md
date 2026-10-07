@@ -4,6 +4,10 @@ All notable changes to Lanyard are listed here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Changed
+
+- The CLI's npm package is now `lanyard-cli` (it was `lanyard-ssh`). Install it with `npm install -g lanyard-cli`, or run it with `npx lanyard-cli`. The `lanyard` and `lny` commands are unchanged.
+
 ## [1.0.0-beta.2] - 2026-10-07
 
 ### Fixed

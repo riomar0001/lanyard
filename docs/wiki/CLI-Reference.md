@@ -1,6 +1,6 @@
 # CLI reference
 
-The command is `lanyard`, with the short alias `lny`. Via npm without installing, it is `npx lanyard-ssh`. See [Installation](Installation.md) for how to get it.
+The command is `lanyard`, with the short alias `lny`. Via npm without installing, it is `npx lanyard-cli`. See [Installation](Installation.md) for how to get it.
 
 - `lanyard` with no arguments opens the desktop app.
 - `lanyard <command> --help` shows every option of a command.

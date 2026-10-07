@@ -44,7 +44,7 @@ function cliHint(): string {
   const here = path.dirname(process.argv[1] ?? __filename);
   const checkoutCli = path.resolve(here, '..', '..', 'bin', 'lanyard.js');
   if (fs.existsSync(checkoutCli)) return `node "${checkoutCli}"`;
-  return 'npx lanyard-ssh';
+  return 'npx lanyard-cli';
 }
 
 const api = createDomainApi({
