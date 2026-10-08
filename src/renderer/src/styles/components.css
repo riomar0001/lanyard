@@ -388,6 +388,27 @@ table.table {
   font-size: 15px;
 }
 
+/* A command to run, with its copy button in the top-right corner. */
+.command-block {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  text-align: left;
+}
+
+.command-block .code-block {
+  padding-right: 44px;
+  /* Wrap a long command between words, not inside them. */
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.command-block > .btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
 /* ------------------------------------------------------------ modal */
 
 .modal-backdrop,

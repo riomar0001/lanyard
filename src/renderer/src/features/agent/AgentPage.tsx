@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw, ShieldCheck, ShieldOff, ShieldPlus, Trash2 } from 'lucide-react';
+import { Copy, RefreshCw, ShieldCheck, ShieldOff, ShieldPlus, Trash2 } from 'lucide-react';
 import { api, ApiError, errorMessage } from '../../lib/api';
 import { useResource } from '../../hooks/useResource';
 import { useTask } from '../../hooks/useTask';
@@ -7,7 +7,7 @@ import { useConfirm } from '../../components/feedback/ConfirmProvider';
 import { useToast } from '../../components/feedback/ToastProvider';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Field';
-import { Badge, Callout, EmptyState, PageHeader } from '../../components/ui/Feedback';
+import { Badge, Callout, CodeBlock, EmptyState, PageHeader } from '../../components/ui/Feedback';
 
 export function AgentPage() {
   const status = useResource(() => api.agent.status());
@@ -73,7 +73,26 @@ export function AgentPage() {
       {status.error && <Callout tone="danger">{status.error}</Callout>}
 
       {agent && !agent.running && (
-        <EmptyState icon={<ShieldOff size={30} />} title="ssh-agent is not reachable">
+        <EmptyState
+          icon={<ShieldOff size={30} />}
+          title="ssh-agent is not reachable"
+          action={
+            agent.command && (
+              <div className="command-block">
+                <CodeBlock>{agent.command}</CodeBlock>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  iconOnly
+                  title="Copy command"
+                  icon={<Copy size={14} />}
+                  loading={isBusy('copy')}
+                  onClick={() => void run('copy', () => api.app.copy(agent.command!), 'Command copied')}
+                />
+              </div>
+            )
+          }
+        >
           <span className="selectable">{agent.message}</span>
         </EmptyState>
       )}
