@@ -4,9 +4,22 @@ All notable changes to Lanyard are listed here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [1.0.0-beta.4] - 2026-10-08
+
+### Changed
+
+- When ssh-agent is not running, the ssh-agent page shows the command that starts it in its own block with a copy button.
+
+### Fixed
+
+- "Copy public key" and the app's other copy buttons, opening links, showing files in their folder, the file and folder pickers, and the window buttons no longer show "Cannot read properties of null (reading 'ok')" after they finish.
+
+## [1.0.0-beta.3] - 2026-10-08
+
 ### Changed
 
 - The CLI's npm package is now `lanyard-cli` (it was `lanyard-ssh`). Install it with `npm install -g lanyard-cli`, or run it with `npx lanyard-cli`. The `lanyard` and `lny` commands are unchanged.
+- Every release now publishes the CLI to npm. Prereleases use the `beta` tag, so testers install them with `npm install -g lanyard-cli@beta`.
 
 ## [1.0.0-beta.2] - 2026-10-07
 
