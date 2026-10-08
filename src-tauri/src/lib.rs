@@ -23,7 +23,9 @@ async fn api_invoke(
     args: Value,
 ) -> Result<Value, String> {
     if router::is_native(&namespace, &method) {
-        return native::app_call(&app, &method, args).await;
+        return Ok(router::envelope(
+            native::app_call(&app, &method, args).await,
+        ));
     }
     // The sidecar round-trip blocks on a channel recv; keep it off the main
     // thread so slow domain calls never freeze the UI.

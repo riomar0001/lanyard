@@ -230,6 +230,8 @@ export interface AgentStatus {
   running: boolean;
   identities: AgentIdentity[];
   message: string;
+  /** Command that starts the agent, shown after `message` when it is not reachable. */
+  command?: string;
 }
 
 // ------------------------------------------------------------- misc

@@ -5,10 +5,12 @@ import { isWin } from '../utils/fs-safe';
 import * as keys from '../keys/keys.service';
 import type { AgentIdentity, AgentStatus } from '../../shared/types';
 
-const NOT_RUNNING_HINT = isWin
-  ? 'The OpenSSH Authentication Agent service is not running. In an elevated PowerShell run: ' +
-    'Get-Service ssh-agent | Set-Service -StartupType Automatic; Start-Service ssh-agent'
-  : 'No agent found. Start one with: eval "$(ssh-agent -s)"';
+const NOT_RUNNING = isWin
+  ? {
+      message: 'The OpenSSH Authentication Agent service is not running. In an elevated PowerShell run:',
+      command: 'Get-Service ssh-agent | Set-Service -StartupType Automatic; Start-Service ssh-agent',
+    }
+  : { message: 'No agent found. Start one with:', command: 'eval "$(ssh-agent -s)"' };
 
 export async function status(): Promise<AgentStatus> {
   let r;
@@ -19,7 +21,7 @@ export async function status(): Promise<AgentStatus> {
   }
   // ssh-add -l exits 0 with keys, 1 when the agent is empty, 2 when unreachable.
   if (r.code === 2 || /could not open a connection|error connecting to agent/i.test(r.stderr)) {
-    return { running: false, identities: [], message: NOT_RUNNING_HINT };
+    return { running: false, identities: [], ...NOT_RUNNING };
   }
   const identities: AgentIdentity[] = [];
   for (const line of r.stdout.split(/\r?\n/)) {

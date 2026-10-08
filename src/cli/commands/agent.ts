@@ -16,7 +16,7 @@ export const register: CommandModule = (program, core) => {
       out.action(async () => {
         const s = await core.agent.status();
         out.emit(s, () => {
-          if (!s.running) return out.warn(s.message);
+          if (!s.running) return out.warn(s.command ? `${s.message} ${s.command}` : s.message);
           out.table(s.identities, [
             { key: 'type', label: 'Type' },
             { key: 'fingerprint', label: 'Fingerprint', format: (v) => c.dim(v) },
