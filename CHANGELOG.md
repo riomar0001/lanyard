@@ -74,6 +74,8 @@ The first public build.
 - Passphrases are kept off the command line on Linux and macOS.
 - See [SECURITY.md](SECURITY.md) for the full audit.
 
-[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.2...HEAD
+[Unreleased]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.4...HEAD
+[1.0.0-beta.4]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.3...v1.0.0-beta.4
+[1.0.0-beta.3]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/riomar0001/lanyard/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/riomar0001/lanyard/releases/tag/v1.0.0-beta.1
